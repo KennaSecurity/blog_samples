@@ -5,7 +5,6 @@ import sys
 import requests
 
 status_opt = "both"
-str_asset_id = sys.argv[1]
 
 if len(sys.argv) > 1:
     opt = sys.argv[1]
