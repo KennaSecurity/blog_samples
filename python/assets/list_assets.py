@@ -5,7 +5,6 @@ import sys
 import requests
 
 status_opt = "both"
-str_asset_id = sys.argv[1]
 
 if len(sys.argv) > 1:
     opt = sys.argv[1]
@@ -31,8 +30,8 @@ headers = {'Accept': 'application/json',
 def sortFunc(entry):
     return entry['id']
 
-# List assests depending on the URL.  A note is displayed for context.
-def list_assets(url, note):
+# List assests depending on the URL. Context is displayed.
+def list_assets(url, context):
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
         print("List Asset Error: " + str(response.status_code))
@@ -43,7 +42,7 @@ def list_assets(url, note):
 
     assets = resp_json['assets']
 
-    print(note)
+    print(context)
 
     # Run through all the assets and print asset ID, asset hostname, and asset note.
     assets.sort(key=sortFunc)
@@ -57,7 +56,7 @@ def list_assets(url, note):
         out_buf = str(asset['id']) + " : " + asset['status'] + " ; " + hostname + notes
         print(out_buf)
 
-    print("Number of " + note + ": " + str(len(assets)))
+    print("Number of " + context + ": " + str(len(assets)))
 
 # List active assets.
 list_active_assets_url = "https://api.kennasecurity.com/assets"
