@@ -1,4 +1,5 @@
 # Lists the assets' ID, hostname and note for active and inactive assets.
+# Displays the first 500 assets, because there is no pagination code.
 
 import os
 import sys
