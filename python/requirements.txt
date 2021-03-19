@@ -1,4 +1,4 @@
 #
 # Requirements for Kenna Security REST API samples
 #
-requests
+requests==2.25.1
