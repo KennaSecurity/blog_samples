@@ -20,10 +20,10 @@ note = ""
 if len(sys.argv) > 2:
     note = sys.argv[2]
 
-# API_KEY is an environment variable.
-api_key = os.getenv('API_KEY')
+# KENNA_API_KEY is an environment variable.
+api_key = os.getenv('KENNA_API_KEY')
 if api_key is None:
-    print("API key is non-existent")
+    print("Environment variable KENNA_API_KEY is non-existent")
     sys.exit(1)
 
 # HTTP header.

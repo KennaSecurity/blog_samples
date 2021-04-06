@@ -3,7 +3,7 @@
 Contains Kenna Security code samples that are relevant to Kenna Security blogs. The directories
 reflect the sections in the [API documentation](https://apidocs.kennasecurity.com/reference).
 
-The examples use the environment variable `API_KEY`. Please make sure you follow the
+The examples use the environment variable `KENNA_API_KEY`. Please make sure you follow the
 [authentication directions](https://apidocs.kennasecurity.com/reference#authentication) 
  and export the API_KEY in your shell environment.
 
