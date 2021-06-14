@@ -33,7 +33,7 @@ def request_asset_exports(api_key, base_url):
     try:
         response = requests.post(url, headers=headers, data=json.dumps(filter_params))
     except Exception as exp:
-        print("Assets Data Exports Error: " + exp.__str__())
+        print("Assets Data Exports Error: {str(exp)}")
         exit(1)
     
     resp = response.json()
@@ -52,7 +52,7 @@ def get_export_status(api_key, base_url, search_id):
     try:
         response = requests.get(check_status_url, headers=headers)
     except Exception as exp:
-        print("Get Export Status Error: " + exp.__str__())
+        print("Get Export Status Error: {str(exp)}")
         exit(1)
     
     resp_json = response.json()
@@ -101,7 +101,7 @@ def retrieve_asset_data(api_key, base_url, id, asset_file_name):
                 file_gz.write(block)
     
     except Exception as exp:
-        print(f"Retrieve asset data error: {exp.__str__()}")
+        print(f"Retrieve asset data error: {str(exp)}")
         sys.exit(1)
 
     return gz_asset_file_name
@@ -147,13 +147,13 @@ def get_vuln_info(api_key, vuln_url, asset_id, avfp, avlfp):
    
        except requests.Timeout as tme:
            retry_cnt += 1
-           print(f"\nGet vuln info Timeout error: {tme.__str__()}.  Sleeping 60s ({retry_cnt})")
+           print(f"\nGet vuln info Timeout error: {str(tme)}.  Sleeping 60s ({retry_cnt})")
            if retry_cnt > 3:
                return 
            time.sleep(60)
    
        except Exception as exp:
-           print(f"\nGet vuln info error: {exp.__str__()}")
+           print(f"\nGet vuln info error: {str(exp)}")
            return
         
        success = True
@@ -168,74 +168,74 @@ def get_vuln_info(api_key, vuln_url, asset_id, avfp, avlfp):
 
     return num_vulns
 
-# main
-# See if an ID is passed in.
-id = 0
-if len(sys.argv) > 1:
-    id = sys.argv[1]
-asset_count = 0
-
-print("Assets Data Exports")
-
-# Obtain the Kenna Security API key.
-api_key = os.getenv('KENNA_API_KEY')
-if api_key is None:
-    print("Environment variable KENNA_API_KEY is non-existent")
-    sys.exit(1)
-
-# You might have to change this depending on your deployment.
-base_url = "https://api.kennasecurity.com/"
-
-# If ID is not defined then request an asset export, else verify.
-if id == 0:
-    (id, asset_count) = request_asset_exports(api_key, base_url)
-    print(f"New search ID: {id}")
-    check_export_status(api_key, base_url, id, asset_count)
-else:
-    print(f"Using search ID: {id}")
-    get_export_status(api_key, base_url, id)
-
-asset_file_name = "assets_" + id
-gz_asset_file_name = retrieve_asset_data(api_key, base_url, id, asset_file_name)
-
-# Gunzip the file into another file.
-print(f"Unzipping file {gz_asset_file_name} to {asset_file_name}")
-with gzip.open(gz_asset_file_name, 'rb') as f_in:
-    with open(asset_file_name, 'wb') as f_out:
-        shutil.copyfileobj(f_in, f_out)
-
-asset_count = count_lines(asset_file_name) 
-time_left_secs = math.ceil(asset_count / 1.7)
-print(f"Estimated processing time for {asset_count} assets: {time_left_secs} seconds. ({time_left_secs/60:0.1f} minutes)")
-
-# Open files for vulnerabilities per asset, and vulnerabilites info based on search ID.
-avfp = open("asset_vuln_info_" + id, "w")
-avlfp = open("asset_vuln_log_" + id, "w")
-
-# Read the asset file looking for asset ID, and for each asset ID obtain the vuln information.
-asset_cntr = 0
-vuln_cntr = 0
-start_time = time.perf_counter()
-acc_start_time = start_time
-with open(asset_file_name) as asset_file:
-    for json_line in asset_file:
-        asset = json.loads(json_line)
-        vuln_url = asset['urls']['vulnerabilities']
-
-        vuln_cntr += get_vuln_info(api_key, vuln_url, str(asset['id']), avfp, avlfp)
-        asset_cntr += 1
-        if asset_cntr != 0 and asset_cntr % 5 == 0:
-            time_lapse = time.perf_counter() - start_time
-            if (time_lapse) < 1.0:
-                print(f"\nExceeded 5 API calls per second.")
-                time.sleep(1)
-
-            if asset_cntr % 25 == 0:
-                time_left_secs = (asset_count - asset_cntr) / (time_lapse / 5)
-                print(f"Processed {asset_cntr} assets and {vuln_cntr} vulns. ({time_left_secs:0.1f}s  {time_left_secs/60:0.1f}m)   \r", end='')
-
-            start_time = time.perf_counter()
-
-total_time_secs = time.perf_counter() - acc_start_time
-avfp.close()
-print(f"Processed {asset_cntr} assets and {vuln_cntr} vulns in {total_time_secs:0.1f}s  ({total_time_secs/60:0.1f}m)   ")
+if __name__ == "__main__":
+    # See if an ID is passed in.
+    id = 0
+    if len(sys.argv) > 1:
+        id = sys.argv[1]
+    asset_count = 0
+    
+    print("Assets Data Exports")
+    
+    # Obtain the Kenna Security API key.
+    api_key = os.getenv('KENNA_API_KEY')
+    if api_key is None:
+        print("Environment variable KENNA_API_KEY is non-existent")
+        sys.exit(1)
+    
+    # You might have to change this depending on your deployment.
+    base_url = "https://api.kennasecurity.com/"
+    
+    # If ID is not defined then request an asset export, else verify.
+    if id == 0:
+        (id, asset_count) = request_asset_exports(api_key, base_url)
+        print(f"New search ID: {id}")
+        check_export_status(api_key, base_url, id, asset_count)
+    else:
+        print(f"Using search ID: {id}")
+        get_export_status(api_key, base_url, id)
+    
+    asset_file_name = "assets_" + id
+    gz_asset_file_name = retrieve_asset_data(api_key, base_url, id, asset_file_name)
+    
+    # Gunzip the file into another file.
+    print(f"Unzipping file {gz_asset_file_name} to {asset_file_name}")
+    with gzip.open(gz_asset_file_name, 'rb') as f_in:
+        with open(asset_file_name, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    
+    asset_count = count_lines(asset_file_name) 
+    time_left_secs = math.ceil(asset_count / 1.7)
+    print(f"Estimated processing time for {asset_count} assets: {time_left_secs} seconds. ({time_left_secs/60:0.1f} minutes)")
+    
+    # Open files for vulnerabilities per asset, and vulnerabilites info based on search ID.
+    avfp = open("asset_vuln_info_" + id, "w")
+    avlfp = open("asset_vuln_log_" + id, "w")
+    
+    # Read the asset file looking for asset ID, and for each asset ID obtain the vuln information.
+    asset_cntr = 0
+    vuln_cntr = 0
+    start_time = time.perf_counter()
+    acc_start_time = start_time
+    with open(asset_file_name) as asset_file:
+        for json_line in asset_file:
+            asset = json.loads(json_line)
+            vuln_url = asset['urls']['vulnerabilities']
+    
+            vuln_cntr += get_vuln_info(api_key, vuln_url, str(asset['id']), avfp, avlfp)
+            asset_cntr += 1
+            if asset_cntr != 0 and asset_cntr % 5 == 0:
+                time_lapse = time.perf_counter() - start_time
+                if (time_lapse) < 1.0:
+                    print(f"\nExceeded 5 API calls per second.")
+                    time.sleep(1)
+    
+                if asset_cntr % 25 == 0:
+                    time_left_secs = (asset_count - asset_cntr) / (time_lapse / 5)
+                    print(f"Processed {asset_cntr} assets and {vuln_cntr} vulns. ({time_left_secs:0.1f}s  {time_left_secs/60:0.1f}m)   \r", end='')
+    
+                start_time = time.perf_counter()
+    
+    total_time_secs = time.perf_counter() - acc_start_time
+    avfp.close()
+    print(f"Processed {asset_cntr} assets and {vuln_cntr} vulns in {total_time_secs:0.1f}s  ({total_time_secs/60:0.1f}m)   ")
