@@ -33,7 +33,7 @@ def request_asset_exports(api_key, base_url):
     try:
         response = requests.post(url, headers=headers, data=json.dumps(filter_params))
     except Exception as exp:
-        print("Assets Data Exports Error: " + exp.__str__())
+        print("Assets Data Exports Error: {str(exp)}")
         exit(1)
     
     resp = response.json()
@@ -52,7 +52,7 @@ def get_export_status(api_key, base_url, search_id):
     try:
         response = requests.get(check_status_url, headers=headers)
     except Exception as exp:
-        print("Get Export Status Error: " + exp.__str__())
+        print("Get Export Status Error: {str(exp)}")
         exit(1)
     
     resp_json = response.json()
@@ -101,7 +101,7 @@ def retrieve_asset_data(api_key, base_url, id, asset_file_name):
                 file_gz.write(block)
     
     except Exception as exp:
-        print(f"Retrieve asset data error: {exp.__str__()}")
+        print(f"Retrieve asset data error: {str(exp)}")
         sys.exit(1)
 
     return gz_asset_file_name
