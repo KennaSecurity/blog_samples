@@ -93,12 +93,11 @@ def get_business_unit_tag(tags):
 def create_risk_meter(bu_tag, base_url, headers):
     bu_tag_parts = bu_tag.split()
     bu_name = bu_tag_parts[1]
-    bu_tag_for_html_query = "bu: " + bu_name
-    #bu_tag_for_html_query = "bu%5C%3A%20" + bu_name
+    bu_tag_for_query = "bu: " + bu_name
 
     query = {
         "status": ["active"],
-        "tags": [bu_tag_for_html_query]
+        "tags": [bu_tag_for_query]
     }
 
     asset_group = {
