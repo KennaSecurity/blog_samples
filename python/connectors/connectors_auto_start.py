@@ -11,7 +11,6 @@ from prettytable import PrettyTable
 # Returns connector information from the List Connectors API.
 def get_connectors(base_url, headers):
     connectors = []
-    list_connectors_url = base_url + "connectors"
     list_connectors_url = f"{base_url}connectors"
 
     response = requests.get(list_connectors_url, headers=headers)
