@@ -1,4 +1,5 @@
-# Checks if connector has run in the last 24 hours.  If not starts it up.
+# Checks if connector will run based on the number of interval hours between the
+# last run and now.
 
 import os
 import sys
@@ -68,6 +69,17 @@ def parse_time_str(time_str):
     return datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 if __name__ == "__main__":
+    # Set the default interval hours between a connector run finishing and the
+    # launch of a connector run.
+    interval_hours = 24
+
+    if len(sys.argv) > 1:
+        try:
+            interval_hours = int(sys.argv[1])
+        except ValueError:
+            print(f"{sys.argv[1]} is not a valid integer.")
+            sys.exit(1)
+
     print("Connector Auto Start")
     print("")
 
@@ -113,9 +125,8 @@ if __name__ == "__main__":
             print(f"{name} still running.")
             continue  # Still running
 
-        temp_datetime = end_datetime + timedelta(hours=24)
-        if (end_datetime + timedelta(hours=24)) > datetime.now():
-            print(f"{name} has to wait 24 hours past {end_datetime}.")
-            continue  # Not 24 yet
+        if (end_datetime + timedelta(hours=interval_hours)) > datetime.now():
+            print(f"{name} has to wait {interval_hours} hours past {end_datetime}.")
+            continue  # Not interval hours yet
 
         print(f"Time to launch {name}.")
