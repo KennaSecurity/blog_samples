@@ -11,6 +11,7 @@ from prettytable import PrettyTable
 def get_connectors(base_url, headers):
     connectors = []
     list_connectors_url = base_url + "connectors"
+    list_connectors_url = f"{base_url}connectors"
 
     response = requests.get(list_connectors_url, headers=headers)
     if response.status_code != 200:
@@ -24,8 +25,7 @@ def get_connectors(base_url, headers):
 
 # Gets the connector runs for a the specified connector ID.
 def get_connector_runs(base_url, headers, connector_id):
-    connector_runs = []
-    get_connector_runs_url = base_url + "connectors/" + str(connector_id) + "/connector_runs"
+    get_connector_runs_url = f"{base_url}connectors/{connector_id}/connector_runs"
 
     response = requests.get(get_connector_runs_url, headers=headers)
     if response.status_code != 200:
@@ -38,7 +38,7 @@ def get_connector_runs(base_url, headers, connector_id):
 
 # Starts a connector run based on the connector ID and returns a connector run ID.
 def run_connector(base_url, headers, connector_id):
-    run_connector_url = base_url + "connectors/" + str(connector_id) + "/run"
+    run_connector_url = f"{base_url}connectors/{connector_id}/run"
 
     response = requests.get(run_connector_url, headers=headers)
     if response.status_code != 200:
@@ -119,3 +119,4 @@ if __name__ == "__main__":
 
     # Print the results in a table form.
     print(conn_tbl)
+    print("")

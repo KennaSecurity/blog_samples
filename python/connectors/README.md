@@ -2,8 +2,8 @@
 
 This directory contains 2 files:
 
-* connectors_auto_start.py - Starts connectors after 24 hours.
-* show_connector_status.py - Displays connector status.  Contains helpful debug functions.
+* connectors_auto_start.py - Starts non-file based connectors after 24 hours since the last one completed.
+* show_connector_status.py - Displays connector status.  Contains helpful debug functions.  This is where the code started, but was refined into `connectors_auto_start.py`.
 
 ## Installation
 To run these code examples, do:
