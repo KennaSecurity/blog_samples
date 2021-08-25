@@ -22,7 +22,7 @@ def get_connectors(base_url, headers):
 
     return connectors
 
-# Gets the connector runs for a the specified connector ID.
+# Gets the connector runs for the specified connector ID.
 def get_connector_runs(base_url, headers, connector_id):
     connector_runs = []
     get_connector_runs_url = base_url + "connectors/" + str(connector_id) + "/connector_runs"
