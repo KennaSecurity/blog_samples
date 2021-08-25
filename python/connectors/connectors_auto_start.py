@@ -23,7 +23,7 @@ def get_connectors(base_url, headers):
 
     return connectors
 
-# Gets the connector runs for a the specified connector ID.
+# Gets the connector runs for the specified connector ID.
 def get_connector_runs(base_url, headers, connector_id):
     get_connector_runs_url = f"{base_url}connectors/{connector_id}/connector_runs"
 
@@ -106,14 +106,15 @@ if __name__ == "__main__":
         id = connector['id']
         name = connector['name']
 
+        # Check if connector is file based.
         if connector['host'] is None:
-            conn_tbl.add_row([name, "is a file connector"])
+            conn_tbl.add_row([name, "is a file base connector"])
             continue    
 
-        # Obtain the connector runs for a a connector.
+        # Obtain the connector runs for a connector.
         connector_runs = get_connector_runs(base_url, headers, id)
         if len(connector_runs) == 0:
-            conn_tbl.add_row([name, "has no runs"])
+            conn_tbl.add_row([name, "has no connectorruns"])
             continue
 
         # Only check the latest run
