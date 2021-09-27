@@ -1,0 +1,5 @@
+# This is just an example file and is not useful in any Kenna product.
+# Email, [[[role],role], ...]`
+duncan@kennasecurity.com, rick_test_read2, rick_test_read
+stilgar@kennasecurity.com, rick_test_read, ag_role8
+chani@kennasecurity.com, ag_role7, ag_role8
