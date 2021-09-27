@@ -18,7 +18,7 @@ class User:
     def get_role_ids(self):
         return self.role_ids
         
-# Retuns a dictionary of user's email to user object.
+# Returns a dictionary of user's email to user object.
 def get_user_ids(base_url, headers):
     users = {}
     list_users_url = f"{base_url}users"
