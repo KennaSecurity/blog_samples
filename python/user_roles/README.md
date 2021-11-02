@@ -1,6 +1,6 @@
 # Multiple Roles per User
 
-Codes example to update users with roles, possibly multiple roles per user.
+Code examples to update users with roles, possibly multiple roles per user.
 
 This directory contains three files:
 
