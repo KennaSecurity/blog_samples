@@ -75,7 +75,7 @@ def get_vuln_info(vuln_url, headers, risk_meter_score_fence, vulns_writer):
 def get_assets_in_risk_meter(base_url, headers, query_string, risk_meter_score_fence, vulns_writer):
     max_allowed_pages = 20
 
-    # Create the search URL with the provied query_string
+    # Create the search URL with the provided query_string
     search_assets_url = f"{base_url}assets/search?{query_string}&per_page=5000"
 
     # Invoke the Search Assets API.
