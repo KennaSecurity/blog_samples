@@ -58,7 +58,7 @@ def get_vuln_info(vuln_url, headers, risk_meter_score_fence, vulns_writer):
     # Write vulnerability CSV header.
     vulns_writer.writerow(["CVE ID", "Priority", "Threat", "Severity", "Risk Meter Score", "Description"])
 
-    # Write the vulnerability information to the provide CSV file.
+    # Write the vulnerability information to the provided CSV file.
     for vuln in vulns_to_process:
         cve_id = vuln['cve_id']
         priority = vuln['priority']
