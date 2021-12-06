@@ -140,7 +140,7 @@ if __name__ == "__main__":
         print("Historical Risk Meter Vulnerability Counts")
         print("")
 
-    # Obtain the Kenna Security API key from an environment variable.
+    # To run this script, please assign your Kenna Risk Token to the KENNA_API_KEY environment variable.
     api_key = os.getenv('KENNA_API_KEY')
     if api_key is None:
         print("API key is non-existent")

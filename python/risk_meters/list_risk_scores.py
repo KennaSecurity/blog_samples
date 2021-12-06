@@ -24,7 +24,6 @@ def get_risk_meter_scores(base_url, headers):
 
     for risk_meter in risk_meters_resp:
         risk_meter_id = risk_meter['id']
-        #query_string = risk_meter['querystring']
         risk_meter_score = risk_meter['risk_meter_score']
         true_score = risk_meter['true_risk_meter_score']
         risk_meters[risk_meter['name']] = (risk_meter_id, risk_meter_score, true_score)
@@ -38,7 +37,7 @@ if __name__ == "__main__":
     print("~~~~~~~~~~~~~~~~~~~~~~")
     print("")
 
-    # Obtain the Kenna Security API key from an environment variable.
+    # To run this script, please assign your Kenna Risk Token to the KENNA_API_KEY environment variable.
     api_key = os.getenv('KENNA_API_KEY')
     if api_key is None:
         print("API key is non-existent")
