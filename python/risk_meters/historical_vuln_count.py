@@ -122,13 +122,13 @@ if __name__ == "__main__":
 
     # Check for arguments that could show if run as a subprocess.
     # If the paramters are invalid, ignore them and proceed.
-    # If the parameters are valid, set the check_risk_meter_name to False.  This
-    # reduces the number of API invokes.
+    # If the parameters are valid, set the check_risk_meter_name to False.
+    # This reduces the number of API invokes.
     if len(sys.argv) > 3 and len(sys.argv) < 7:
         try:
             risk_meter_id = int(sys.argv[3])
             risk_meter_score = int(sys.argv[4])
-            risk_accepted_score = int(sys.argv[5])
+            true_risk_score = int(sys.argv[5])
             check_risk_meter_name = False
         except ValueError:
             print(f"Invalid integer argument: {sys.argv[3]}, {sys.argv[4]}, {sys.argv[5]}")
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         if check_risk_meter_name:
             print(f"{risk_meter_name} ({risk_meters[risk_meter_name]})")
         else:
-            print(f"{risk_meter_name} ({risk_meters[risk_meter_name]})  [{risk_meter_score}, {risk_accepted_score}]")
+            print(f"{risk_meter_name} ({risk_meters[risk_meter_name]})  [{risk_meter_score}, {true_risk_score}]")
         print("Vulnerability Counts and Risk Accepted (RA) Vulnerability Counts")
 
         process_reports(base_url, headers, id, start_date_str, one_shot)
