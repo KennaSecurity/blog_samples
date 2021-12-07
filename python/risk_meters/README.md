@@ -4,7 +4,7 @@ Code examples to obtain risk meter (asset groups) vulnerabilities, and list risk
 
 This directory contains the following files:
 
-## [Risk Meter Vulnerabilities Blog](https://github.com/KennaSecurity/blog_samples/tree/main/python/risk_meters)
+## [Risk Meter Vulnerabilities Blog](https://www.kennasecurity.com/blog/risk-meter-vulnerabilities-api/)
 
 * risk_meter_vulns.py - creates a CSV file (vulns_in_risk_meter.csv) containing risk meter vulnerabilites. An optional risk meter score can be specified.
 * list_risk_meters.py - lists risk meter information in a table format.
