@@ -8,6 +8,7 @@ This directory contains the following files:
 
 * risk_meter_vulns.py - creates a CSV file (vulns_in_risk_meter.csv) containing risk meter vulnerabilites. An optional risk meter score can be specified.
 * list_risk_meters.py - lists risk meter information in a table format.
+* list_risk_meters_lite.py - list risk meter information in a table format not using asset search. Faster than `list_risk_meters.py`.
 
 ## [Risk Meter Reports Blog](https://www.kennasecurity.com/blog/risk-meter-reports-python-api/)
 
