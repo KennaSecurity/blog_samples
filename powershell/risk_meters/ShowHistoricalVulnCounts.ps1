@@ -7,7 +7,7 @@
     the historical number of vulnerabilities at high risk that are past due and the total number
     of high risk vulnerabilities by month.  This information is exported to a CSV file.
 
-    The CVS file is removed explitly before each run even though the Export-CSV documentation
+    The CVS file is removed explicitly before each run even though the Export-CSV documentation
     states that it does.
 .EXAMPLE
     ShowHistoricalVulnCounts.ps1 $startDate $csvFileName
