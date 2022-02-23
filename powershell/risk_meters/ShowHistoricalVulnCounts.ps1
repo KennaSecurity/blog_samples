@@ -7,8 +7,8 @@
     the historical number of vulnerabilities at high risk that are past due and the total number
     of high risk vulnerabilities by month.  This information is exported to a CSV file.
 
-    The file needs to be removed before each run even though the Export-CSV documentation states
-    that it doesn't.
+    The CVS file is removed explitly before each run even though the Export-CSV documentation
+    states that it does.
 .EXAMPLE
     ShowHistoricalVulnCounts.ps1 $startDate $csvFileName
     ShowHistoricalVulnCounts.ps1 2021-10-01 /users/john/tmp/vuln_count.csv
@@ -237,6 +237,11 @@ $AssetGroups = Invoke-List-Risk-Meters -BaseUrl $BaseUrl -Headers $Headers
 
 #$AssetGroups | Format-Table -Property name, id, asset_count, @{Label="Score"; Expression={$_.risk_meter_score}}, updated_at
 
+# Remove the CSV file if it exists, since Export-CSV doesn't do this as documented.
+if (Test-Path $csvFileName) {
+    Remove-Item -Path $csvFileName
+}
+
 # For each asset group, obtain the total number of vulnerabilities (vulns) and the number of vulns past the due date.
 ForEach ($AssetGroup in $AssetGroups) {
     # Invoke APIs to obtain the historical vuln counts.
@@ -258,7 +263,7 @@ ForEach ($AssetGroup in $AssetGroups) {
     # Keep only the first day of the months for total vuln counts.
     $keyHash = [ordered] @{}
     $HistoricalVulnCounts.PsObject.Properties | ForEach-Object {
-        if ($_.Name -match '\d\d\d\d-\d\d-01') {
+        if ($_.Name -match '^\d\d\d\d-\d\d-01$') {
             $keyHash[$_.Name] = $_.Value.high
         }
     }
