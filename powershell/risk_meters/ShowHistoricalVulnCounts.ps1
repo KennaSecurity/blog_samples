@@ -7,8 +7,8 @@
     the historical number of vulnerabilities at high risk that are past due and the total number
     of high risk vulnerabilities by month.  This information is exported to a CSV file.
 
-    The CVS file is removed explicitly before each run even though the Export-CSV documentation
-    states that it does.
+    The CVS file is removed explicitly before each run because the code is always doing
+    an Append.
 
 .EXAMPLE
     ShowHistoricalVulnCounts.ps1 $startDate $csvFileName
@@ -34,7 +34,7 @@ function New-Blank-Row
 {
     $blankRow = [ordered] @{} 
 
-    $blankRow["Risk Name"] = ""
+    $blankRow["Risk Meter Name"] = ""
     $blankRow["ID"] = ""
     $blankRow["Score"] = ""
     $blankRow["Asset Count"] = ""
@@ -238,7 +238,7 @@ $AssetGroups = Invoke-List-Risk-Meters -BaseUrl $BaseUrl -Headers $Headers
 
 #$AssetGroups | Format-Table -Property name, id, asset_count, @{Label="Score"; Expression={$_.risk_meter_score}}, updated_at
 
-# Remove the CSV file if it exists, since Export-CSV doesn't do this as documented.
+# Remove the CSV file if it exists, since Export-CSV doesn't do this because we are using Append.
 if (Test-Path $csvFileName) {
     Remove-Item -Path $csvFileName
 }
