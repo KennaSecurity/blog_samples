@@ -9,6 +9,7 @@
 
     The CVS file is removed explicitly before each run even though the Export-CSV documentation
     states that it does.
+
 .EXAMPLE
     ShowHistoricalVulnCounts.ps1 $startDate $csvFileName
     ShowHistoricalVulnCounts.ps1 2021-10-01 /users/john/tmp/vuln_count.csv
