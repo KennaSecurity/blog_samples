@@ -252,7 +252,7 @@ ForEach ($AssetGroup in $AssetGroups) {
     #Write-Host "$($AssetGroup.name)  $($AssetGroup.id)  $($AssetGroup.asset_count)  $($AssetGroup.risk_meter_score)"
     # Verify that the Asset Group IDs match.
     If ($VulnCountsResp.id -ne $PastDueVulnCountsResp.id) {
-        Write-Howt "IDs don't match" -ForegroundColor Red
+        Write-How "IDs don't match" -ForegroundColor Red
         Exit
     }
 
