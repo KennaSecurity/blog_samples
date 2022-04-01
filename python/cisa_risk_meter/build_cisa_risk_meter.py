@@ -13,6 +13,7 @@ VULN_UPDATE_LIMIT = 5000
 
 # Maximum page size
 SEARCH_PAGE_SIZE = 5000
+RISK_METER_PAGE_SIZE = 100
 
 # This might have to changed depending on your setup.
 KENNA_BASE_URL = "https://api.kennasecurity.com/"
@@ -171,7 +172,8 @@ def get_a_risk_meter(base_url, headers, risk_meter_name):
     max_pages = API_MAX_PAGES
     page_num = 1
     while page_num <= max_pages:
-        list_risk_meters_url = f"{base_url}asset_groups?per_page=100$&page={page_num}"
+        page_size_query = f"per_page={RISK_METER_PAGE_SIZE}"
+        list_risk_meters_url = f"{base_url}asset_groups?{page_size_query}&page={page_num}"
         logging.info(f"List risk meter URL: {list_risk_meters_url}")
 
         # Invoke the List Asset Groups (Risk Meters) API.
@@ -231,8 +233,7 @@ def create_risk_meter(base_url, headers, risk_meter_name, cisa_custom_field_id):
     logging.info(f"Created risk meter: '{risk_meter_name}'")
 
 if __name__ == "__main__":
-    print("Build CISA Exploited Vulnerabilities Risk Meter")
-    print("")
+    print("Build CISA Exploited Vulnerabilities Risk Meter\n")
 
     logging_file_name = "cisa_vulns.log"
     logging.basicConfig(filename=logging_file_name, level=logging.INFO)
