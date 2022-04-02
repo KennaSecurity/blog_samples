@@ -200,7 +200,7 @@ def get_a_risk_meter(base_url, headers, risk_meter_name):
     return None
 
 # Create a risk meter (asset groug), with a CISA custom field query string.
-# Unfortunately, the custom field ID is required and is an 
+# Both the custom field name and custom field ID are required.
 def create_risk_meter(base_url, headers, risk_meter_name, cisa_custom_field_id):
     create_risk_meter_url = f"{base_url}asset_groups"
     vuln_custom_fields = f"custom_fields:{cisa_custom_field_id}:{CISA_CUSTOM_FIELD_NAME}"
