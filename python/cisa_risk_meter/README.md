@@ -9,6 +9,7 @@ This directory contains the following files:
 
 ## Directions
 
+1. Install the progrm the program by doing: `pip -r requirements.txt`.
 1. In your Kenna Security UI, create a custom field, "CISA".  For details see: 
 [Creating a Custom Field](https://help.kennasecurity.com/hc/en-us/articles/201921738-Creating-a-Custom-Field)
 Note the custom field ID, you might need this.
