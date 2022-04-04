@@ -24,7 +24,7 @@ def print_json(json_obj):
 
 # Get the CISA catalog.
 def get_cisa_catalog():
-    get_cisa_catalog_url = f"https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    get_cisa_catalog_url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
     headers = { 'Accept': 'application/json',
                 'Content-Type': 'application/json; charset=utf-8' }
 

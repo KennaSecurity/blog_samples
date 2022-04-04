@@ -9,7 +9,7 @@ def print_json(json_obj):
 # Get the CISA catalog.
 def get_cisa_catalog(headers):
     cisa_catalog = {}
-    get_cisa_catalog_url = f"https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    get_cisa_catalog_url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 
     response = requests.get(get_cisa_catalog_url, headers=headers)
     if response.status_code != 200:
