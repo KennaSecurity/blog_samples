@@ -6,8 +6,6 @@ import logging
 import requests
 
 # Humble constants.
-VERSION = 1.1
-
 API_MAX_PAGES = 20
 CISA_CUSTOM_FIELD_NAME = "CISA"
 CISA_RISK_METER_NAME = "CISA Exploited Vulnerabilities"
@@ -24,19 +22,6 @@ KENNA_BASE_URL = "https://api.kennasecurity.com/"
 def print_json(json_obj):
     print(json.dumps(json_obj, sort_keys=True, indent=2))
 
-# Process an HTTP error by printing and log.error
-def process_http_error(msg, response, url):
-    print(f"{msg} HTTP Error: {response.status_code} with {url}")
-    if response.text is None:
-        logging.error(f"{msg}, {url} status_code: {response.status_code}")
-    else:
-        logging.error(f"{msg}, {url} status_code: {response.status_code} info: {response.text}")
-  
-# Print and log information.
-def process_info(msg):
-    print(msg)
-    logging.info(msg)
-
 # Get the CISA catalog.
 def get_cisa_catalog():
     get_cisa_catalog_url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -45,11 +30,14 @@ def get_cisa_catalog():
 
     response = requests.get(get_cisa_catalog_url, headers=headers)
     if response.status_code != 200:
-        process_http_error("List CISA Catalog API ", response, get_cisa_catalog_url)
+        print(f"List CISA Catalog Error: {response.status_code} with {get_cisa_catalog_url}")
+        logging.error(f"List CISA Catalog API, {get_cisa_catalog_url} error: {resp_json}")
         sys.exit(1)
 
+    resp_json = response.json()
+
     # Return the CISA catalog.
-    return response.json()
+    return resp_json
 
 # Checks for a custom_field name is associated with the vulnerability.
 # Returns the custom field or None.
@@ -84,24 +72,27 @@ def check_for_custom_field(base_url, headers, custom_field):
     logging.info(f"Vulnerability custom field search URL: {search_url}")
                
     response = requests.get(search_url, headers=headers)
+    resp_json = response.json()
 
     # A HTTP error coode 422 is returned when there is no matching custom field,
     # therefore, it is caught here and an empty array is returned.
     if response.status_code == 422:
         print(f"Please configure {custom_field} as a custom field in the UI.")
-        process_http_error(f"Search Vulnerabilities API for custom field {custom_field} ", response, search_url)
+        logging.error(f"Search Vulnerabilities for custom field {custom_field} API, {search_url}, error: {resp_json}")
         logging.error(f"The custom field, {custom_field} needs to be configured in the UI")
         sys.exit(1)
 
     # Check for other HTTP errors.
     if response.status_code != 200:
-        process_http_error(f"Search Vulnerabilities API for custom field {custom_field} ", response, search_url)
+        print(f"Search Vulns Error: {response.status_code} with {search_url}")
+        logging.error(f"Search Vulnerabilities for custom field {custom_field} API, {search_url}, error: {resp_json}")
+        print_json(resp_json)
         sys.exit(1)
     
-    resp_json = response.json()
     meta_info = resp_json['meta']
     total_vulns_with_custom_field = meta_info['total_count']
-    process_info(f"{total_vulns_with_custom_field} vulnerabilities with {custom_field} custom fields")
+    print(f"{total_vulns_with_custom_field} vulnerabilities with {custom_field} custom field.")
+    logging.info(f"{total_vulns_with_custom_field} vulnerabilities with {custom_field} custom fields")
 
     # Return the CISA custom field ID based on the first vulnerability found with CISA custom field.
     vulns = resp_json['vulnerabilities']
@@ -134,19 +125,22 @@ def search_vulns_for_cve_id(base_url, headers, cve_id):
         logging.warn(f"Connection error, waiting three seconds.  URL: {search_url}")
         time.sleep(3)
         response = requests.get(search_url, headers=headers)
+    resp_json = response.json()
 
-    # If too many requests per second, wait 3 seconds.
+    # If too many requests per second, wait a second.
     if response.status_code == 429:
         logging.warn(f"Too many search requests, waiting three seconds.  URL: {search_url}")
         time.sleep(3)
         response = requests.get(search_url, headers=headers)
+        resp_json = response.json()
 
     # Check for all other errors.
     if response.status_code != 200:
-        process_http_error(f"Search Vulnerabilities API with query string {q_str} ", response, search_url)
+        print(f"Search Vulns Error: {response.status_code} with {search_url}")
+        print_json(resp_json)
+        logging.error(f"Search Vulnerabilities with query string {q_str} API, {search_url}, error: {resp_json}")
         sys.exit(1)
     
-    resp_json = response.json()
     return resp_json['vulnerabilities']
 
 def update_cisa_vulns(base_url, headers, vuln_ids, custom_field_id):
@@ -165,16 +159,13 @@ def update_cisa_vulns(base_url, headers, vuln_ids, custom_field_id):
     }
 
     response = requests.put(bulk_update_url, headers=headers, data=json.dumps(update_data))
+    resp_json = response.json()
     if response.status_code != 200:
-        process_http_error("Vulnerability Bulk Update API ", response, bulk_update_url)
+        print(f"List CISA Catalog Error: {response.status_code} with {bulk_update_url}")
+        logging.error(f"Vulnerability bulk update API, {bulk_update_url}, error: {resp_json}")
         sys.exit(1)
     
-    resp_json = response.json()
-    vulns_updated = resp_json['vulnerabilities_updated']
-    if vulns_updated != len(vuln_ids):
-        logging.warn("Number of IDs, {len(vuln_ids)} doesn't equal vulns updated, {vulns_updated}.")
-
-    process_info(f"{vulns_updated} vulnerabilities updated with {CISA_CUSTOM_FIELD_NAME} custom field")
+    logging.info(f"{len(vuln_ids)} vulnerabilities updated with {CISA_CUSTOM_FIELD_NAME} custom field")
     
 # Get a risk meter (asset group) by name.
 def get_a_risk_meter(base_url, headers, risk_meter_name):
@@ -187,11 +178,12 @@ def get_a_risk_meter(base_url, headers, risk_meter_name):
 
         # Invoke the List Asset Groups (Risk Meters) API.
         response = requests.get(list_risk_meters_url, headers=headers)
+        resp_json = response.json()
         if response.status_code != 200:
-            process_http_error(f"List asset group (risk meter) API", response, list_risk_meters_url)
+            print(f"List Risk Meters Error: {response.status_code} with {list_risk_meters_url}")
+            logging.error(f"List asset group (risk meter) API, {list_risk_meters_url} error: {resp_json}")
             sys.exit(1)
 
-        resp_json = response.json()
         risk_meters_resp = resp_json['asset_groups']
         # Set the maximum number of pages, so that we have one loop.
         max_pages = resp_json['meta']['pages']
@@ -231,16 +223,21 @@ def create_risk_meter(base_url, headers, risk_meter_name, cisa_custom_field_id):
 
     # Invoke the Create Asset Groups (Risk Meters) API.
     response = requests.post(create_risk_meter_url, headers=headers, data=json.dumps(create_data))
+    resp_json = response.json()
     if response.status_code != 201:
-        process_http_error(f"Create asset group (risk meter) API", response, create_risk_meter_url)
+        print(f"Create Risk Meters Error: {response.status_code} with {create_risk_meter_url}")
+        logging.error(f"Create asset group (risk meter) API, {create_risk_meter_url} error: {resp_json}")
         sys.exit(1)
 
-    process_info(f"Created risk meter: '{risk_meter_name}'")
+    print(f"Created risk meter: '{risk_meter_name}'.")
+    logging.info(f"Created risk meter: '{risk_meter_name}'")
 
 if __name__ == "__main__":
+    print("Build CISA Exploited Vulnerabilities Risk Meter\n")
+
     logging_file_name = "cisa_vulns.log"
     logging.basicConfig(filename=logging_file_name, level=logging.INFO)
-    process_info(f"Build CISA Exploited Vulnerabilities Risk Meter v{VERSION}")
+    logging.info("Build CISA Exploited Vulnerabilities Risk Meter")
 
     cisa_custom_field_id = 0
     if len(sys.argv) > 1:
@@ -250,8 +247,8 @@ if __name__ == "__main__":
     # Check if the Kenna API key is present and accounted for.
     api_key = os.getenv('KENNA_API_KEY')
     if api_key is None:
-        print("KENNA_API_KEY environment variable is non-existent.  Please create.")
-        logging.error(f"KENNA_API_KEY environment variable is non-existent")
+        print("KENNA API key is non-existent")
+        logging.error(f"KENNA API KEY environment variable is non-existent")
         sys.exit(1)
     
     # HTTP headers for Kenna.
@@ -281,7 +278,7 @@ if __name__ == "__main__":
         print(f"Count of {cisa_num_vulns} does equal vuln array length {len(cisa_vulns)}")
         logging.error(f"CISA API internal error: Count of {cisa_num_vulns} does equal vuln array length {len(cisa_vulns)}")
         sys.exit(1)
-    process_info(f"CISA catalog obtained with {cisa_num_vulns} vulnerabilities")
+    logging.info(f"CISA catalog obtained with {cisa_num_vulns} vulnerabilities")
 
     # Before we start searching for CISA vulnerabilities, let's see if we have a CISA risk meter.
     # Let's make it easy and search by name.  (We could search by query string.)
@@ -334,4 +331,5 @@ if __name__ == "__main__":
         logging.info(f"Final updated CISA custom field for {len(vulns_to_update)} vulns")
         vulns_updated += len(vulns_to_update)
     
-    process_info(f"{CISA_RISK_METER_NAME} created with {vulns_updated} vulnerabilities updated")
+    print(f"{CISA_RISK_METER_NAME} created with {vulns_updated} vulnerabilities updated.")
+    logging.info(f"{CISA_RISK_METER_NAME} created with {vulns_updated} vulnerabilities updated")

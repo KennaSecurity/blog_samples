@@ -4,8 +4,9 @@ Code example that builds a Kenna Security risk meter based on CISA catalog vulne
 
 This directory contains the following files:
 
-* build_cisa_risk_meter.py - creates or updated a Kenna Security risk meter base of the CISA catalog vulnerabilities
-* get_cisa_catalog.py - stand-alone program that obtains the CISA vulnerability catalog
+* build_cisa_risk_meter.py - Latest version. Creates or updates a Kenna Security risk meter base of the CISA catalog vulnerabilities.
+* blog_build_cisa_risk_meter.py - Code that is used for the [blog](https://www.kennasecurity.com/blog/create-a-cisa-risk-meter/). Creates or updates a Kenna Security risk meter base of the CISA catalog vulnerabilities.
+* get_cisa_catalog.py - stand-alone program that obtains the CISA vulnerability catalog.
 
 ## Directions
 
@@ -37,5 +38,6 @@ CISA Exploited Vulnerabilities created with 1577 vulnerabilities updated.
 ```
 
 ## Reference
+* [How to Create a CISA Risk Meter](https://www.kennasecurity.com/blog/create-a-cisa-risk-meter/)
 * [Why You Should Be Using the CISA Catalog](https://www.darkreading.com/vulnerabilities-threats/why-you-should-be-using-cisa-s-catalog-of-exploited-vulns)
 
