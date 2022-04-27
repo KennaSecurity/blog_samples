@@ -1,2 +1,5 @@
+*.csv
 *.gz
+*.jsonl
 *.log
+

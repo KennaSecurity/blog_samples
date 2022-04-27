@@ -56,6 +56,8 @@ def get_export_status(base_url, headers, search_id):
     check_status_url = base_url + "/data_exports/status?search_id=" + search_id
 
     response = requests.get(check_status_url, headers=headers)
+    if response.status_code == 206:
+        return False
     if response.status_code != 200:
         process_http_error(f"Get Export Status API Error", response, check_status_url)
         sys.exit(1)
@@ -64,17 +66,17 @@ def get_export_status(base_url, headers, search_id):
     return resp_json['message'] == "Export ready for download"
 
 # Check to see if the export file is ready to download.
-def check_export_status(base_url, headers, search_id, asset_count):
+def check_export_status(base_url, headers, search_id, num_assets):
 
+    # Check if the export is ready already.
+    ready = get_export_status(base_url, headers, search_id)
+    if ready:
+        return
+    
     # Estimate export time for if we're waiting.
     # Calculate wait interval between checking if the export file is ready.
-    wait_interval_secs = 5 if asset_count < 1000 else 10
-    wait_limit_secs = math.ceil(asset_count / 16)
-    wait_limit_minutes = math.ceil(wait_limit_secs/60)
-    if wait_limit_minutes > 2:
-        print(f"The export will take approximately {wait_limit_minutes} minutes.")
-    else:
-        print(f"The export will take approximately {wait_limit_secs} seconds.")
+    wait_interval_secs = 5 if num_assets < 2718 else 10
+    wait_limit_secs = math.ceil(num_assets / 16)
 
     # Loop to check status for wait_limit_secs seconds.
     secs = 0

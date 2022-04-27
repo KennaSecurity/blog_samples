@@ -26,13 +26,13 @@ class Asset_Tag_Info:
 def print_help():
     prog_name = sys.argv[0]
     print("Gets unique asset tags and puts them in a CSV file.")
-    print("The <id> is search ID from an asset export.")
-    print("If <id> is not present, a new export is created and retrieved.")
     print("")
 
     print("There are 2 formats:")
     print(f"    {prog_name}")
-    print(f"    {prog_name} <id>")
+    print(f"    {prog_name} <search_id>")
+    print("Where <search_id> is search ID from an asset export.")
+    print("If <search_id> is not present, a new export is created and retrieved.")
     print("")
     
     print("To obtain this output:")
@@ -45,6 +45,11 @@ def print_help():
 def print_info(msg):
     print(msg)
     logging.info(msg)
+
+# Print and error information.
+def print_error(msg):
+    print(msg)
+    logging.error(msg)
 
 # Process an HTTP error by printing and log.error
 def process_http_error(msg, response, url):
@@ -176,8 +181,17 @@ def count_lines(asset_file_name):
     # Add one to the number of lines because the end of files does not have '\n'.
     return lines + 1
 
+def convert_to_json(asset_line):
+    try:
+        asset = json.loads(asset_line.strip())
+    except json.JSONDecodeError:
+        print_error("The file's format is probably not JSONL, but XML or CSV")
+        sys.exit(1)
+    
+    return asset
+
 # Process a string of asset tags.  Each asset tag is checked if it exists in the 
-# the asset tag dictionar.
+# the asset tag dictionary.
 def process_tags(asset_id, tags_to_process, asset_tags):
     for tag in tags_to_process:
         if tag in asset_tags:
@@ -195,12 +209,18 @@ def process_jsonl_file(jsonl_asset_file_name, asset_tags):
 
     with open(jsonl_asset_file_name, 'r') as jsonl_f:
         for line_num, asset_line in enumerate(jsonl_f):
-            asset = json.loads(asset_line.strip())
-            #print(f"{asset}")
+            asset = convert_to_json(asset_line)
+
+            if not "locator" in asset:
+                print_error(f"Can't find 'locator' field.  Is this an asset import?")
+                print_error(f"Line read: {asset}")
+                sys.exit(1)
+
             if "tags" in asset:
-                #print(f"{asset['id']}: {asset['tags']}")
+                logging.debug(f"{asset['id']}: {asset['tags']}")
                 process_tags(asset['id'], asset['tags'], asset_tags)
             asset_count += 1
+
             if asset_count % print_interval == 0:
                 logging.info(f"{asset_count} processed")
 
@@ -218,6 +238,8 @@ def write_csv_file(asset_tags):
     for asset_tag in asset_tags:
         asset_tag_info = asset_tags[asset_tag]
         uniq_tag_writer.writerow([asset_tag, asset_tag_info.get_count()])
+    
+    print_info(f"{csv_file_name} is now available.")
 
 if __name__ == "__main__":
 # See if an ID is passed in.
@@ -265,6 +287,9 @@ if __name__ == "__main__":
     
     # Count and report.
     num_assets = count_lines(jsonl_asset_file_name) 
+    if num_assets == 1:
+        print_error(f"The format of file {jsonl_asset_file_name} is probably JSON, not JSONL")
+        sys.exit(1)
     print(f"File: {jsonl_asset_file_name} with {num_assets} assets.")
     
     asset_tags = {} 
@@ -275,3 +300,4 @@ if __name__ == "__main__":
     print_info(f"{num_uniq_asset_tags} unique asset tags discovered.")
 
     write_csv_file(asset_tags)
+
