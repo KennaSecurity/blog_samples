@@ -17,7 +17,7 @@ This directory contains the following files:
 1. Run the program: `python blog1_uniq_asset_tags.py`
 
 ### Options
-You can also run the script with a previous search ID. This will first look for asset_<search ID>.jsonl and then asset_<search ID>.gz. If neither is found, the script will check for export status.
+You can also run the script with a previous search ID. This will first look for `asset_<search ID>.jsonl` and then `asset_<search ID>.gz`. If neither is found, the script will check the export status.
 
 `python blog1_uniq_asset_tags.py -h` prints help.
 
