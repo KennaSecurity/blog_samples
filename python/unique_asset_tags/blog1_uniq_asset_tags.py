@@ -74,14 +74,15 @@ def request_asset_exports(base_url, headers):
     resp = response.json()
     search_id = str(resp['search_id'])
     num_assets = resp['record_count']
-    print_info(f"Search ID: {id}")
-    print_info(f"Asset count: {num_assets}")
+    print_info(f"New search ID: {search_id} with {num_assets} assets")
     return (search_id, num_assets)
 
 def get_export_status(base_url, headers, search_id):
     check_status_url = f"{base_url}data_exports/status?search_id={search_id}"
 
     response = requests.get(check_status_url, headers=headers)
+    if response.status_code == 206:
+        return False
     if response.status_code != 200:
         process_http_error(f"Get Export Status API Error", response, check_status_url)
         sys.exit(1)
@@ -99,13 +100,8 @@ def check_export_status(base_url, headers, search_id, num_assets):
     
     # Estimate export time for if we're waiting.
     # Calculate wait interval between checking if the export file is ready.
-    wait_interval_secs = 5 if num_assets < 1000 else 10
+    wait_interval_secs = 5 if num_assets < 2718 else 10
     wait_limit_secs = math.ceil(num_assets / 16)
-    wait_limit_minutes = math.ceil(wait_limit_secs/60)
-    if wait_limit_minutes > 2:
-        print_info(f"The export will take approximately {wait_limit_minutes} minutes.")
-    else:
-        print_info(f"The export will take approximately {wait_limit_secs} seconds.")
 
     # Loop to check status for wait_limit_secs seconds.
     secs = 0
@@ -259,7 +255,6 @@ if __name__ == "__main__":
     # If ID is not defined then request an asset export, else verify.
     if id == 0:
         (id, num_assets) = request_asset_exports(base_url, headers)
-        print_info(f"New search ID: {id}")
         check_export_status(base_url, headers, id, num_assets)
     else:
         print_info(f"Using search ID: {id}")

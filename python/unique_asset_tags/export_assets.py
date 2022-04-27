@@ -170,7 +170,7 @@ if __name__ == "__main__":
         check_export_status(base_url, headers, id, 50000)
     
     asset_file_name = "assets_" + id
-    gz_asset_file_name = retrieve_asset_data(api_key, base_url, id, asset_file_name)
+    gz_asset_file_name = retrieve_asset_data(base_url, headers, id, asset_file_name)
     
     # Gunzip the file into another file.
     print(f"Unzipping file {gz_asset_file_name} to {asset_file_name}")
