@@ -1,4 +1,4 @@
-# List Unique Asset Tags
+# [List Unique Asset Tags Part 1 Blog](https://www.kennasecurity.com/blog/listing-unique-asset-tags-part-1/)
 
 Code example that builds a CSV containing unique asset tags the number of assets the tag is attached to.
 
