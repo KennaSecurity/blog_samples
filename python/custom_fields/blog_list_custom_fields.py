@@ -1,11 +1,14 @@
-# Does an vuln export and for each vuln, collects the vulnerability information.
+# Lists unique custom fields with their values.
+#
+# Does an vulnerability export and for each vulnerability, collects the custom
+# field information, processes it, and write the information to a CSV file.
+#
 # A gzip file in the form of vulns_xxxx.gz and a unzip file vulns_xxxx are left
 # around.
 #
 # The script has one optional parameter, the search ID.  If specified, it is assumed
 # that you know the search ID from a previous search.
 
-from email.mime import base
 import os
 import sys
 import csv
@@ -90,7 +93,7 @@ def process_http_error(msg, response, url):
 
 # Invoke the data_exports API to request an vuln export.
 def request_vuln_exports(base_url, headers):
-    request_export_url = base_url + "/data_exports"
+    request_export_url = f"{base_url}/data_exports"
 
     filter_params = {
         'status' : ['open'],
@@ -124,11 +127,10 @@ def check_export_status(base_url, headers, search_id):
 
     # Check the export status until the export is ready or the time limit is met.
     while not ready and cnt <= wait_count:
-        try:
-            response = requests.get(check_status_url, headers=headers)
-        except Exception as exp:
-            print_error(f"Check Status Error: {exp.__str__()}")
-            exit(1)
+        response = requests.get(check_status_url, headers=headers)
+        if response.status_code != 200:
+            process_http_error(f"Check Data Export Status API Error", response, check_status_url)
+            sys.exit(1)
     
         resp_json = response.json()
         if resp_json['message'] == "Export ready for download":
@@ -308,7 +310,7 @@ if __name__ == "__main__":
                'User-Agent': 'list_custom_fields/1.0.0 (Kenna Security)'}
 
     # You might have to change this depending on your deployment.
-    base_url = "https://api.kennasecurity.com/"
+    base_url = "https://api.kennasecurity.com"
     
     # If ID is not defined then do an vuln export.
     if id == 0:
