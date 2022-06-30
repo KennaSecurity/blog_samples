@@ -18,6 +18,7 @@ Note the custom field ID, you might need this.
    * In Windows: https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html
    * In DOS: `set KENNA_API_KEY=<your API key>`
    * In Linux: `export KENNA_API_KEY="<your API key>"`
+1. If your Kenna Security API server's URL is not `api.kennasecurity.com`, then edit `KENNA_BASE_URL` in build_cisa_risk_meter.py to the correct API server URL.
 1. Run the program: `python build_cisa_risk_meter.py`
 
 ## Sample Output
