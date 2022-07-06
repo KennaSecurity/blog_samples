@@ -8,7 +8,7 @@ This directory contains code samples that:
 
 There are four files:
 
-* blog_list_custom_fields.py - Code that is used in the blog.
+* blog_list_custom_fields.py - Code that is used in the [Custom Field blog](https://www.kennasecurity.com/blog/custom-fields/).
 * list_custom_fields.py - Latest version that lists unique custom fields and their values.
 * search_custom_field.py - Searchs vulnerabilities for a custom field and value.
 * update_custom_field.py - Updates a custom field for one vulnerability.
