@@ -114,31 +114,38 @@ def request_vuln_exports(base_url, headers):
     print_info(f"New search ID: {search_id} with {num_vulns} vulnerabilities.")
     return search_id
 
+# Get the export status.  Return True when the correct phrase is returned.
+def get_export_status(base_url, headers, search_id):
+    check_status_url = f"{base_url}/data_exports/status?search_id={search_id}"
+
+    # Check the export status.
+    response = requests.get(check_status_url, headers=headers)
+    if response.status_code == 206:
+        return False
+    if response.status_code != 200:
+        process_http_error(f"Check Data Export Status API Error", response, check_status_url)
+        sys.exit(1)
+    
+    resp_json = response.json()
+    return True if resp_json['message'] == "Export ready for download" else False
+    
 # Check to see if the export file is ready to download.
 def check_export_status(base_url, headers, search_id):
-    check_status_url = f"{base_url}/data_exports/status?search_id={search_id}"
 
     # Loop to check status for 20 minutes.
     wait_minutes = 20
     interval_secs = 5
-    wait_count = wait_minutes * (60 / interval_secs)
-    cnt = 0
+    wait_count = round(wait_minutes * (60 / interval_secs))
+    cnt = 1
     ready = False
 
     # Check the export status until the export is ready or the time limit is met.
-    while not ready and cnt <= wait_count:
-        response = requests.get(check_status_url, headers=headers)
-        if response.status_code != 200:
-            process_http_error(f"Check Data Export Status API Error", response, check_status_url)
-            sys.exit(1)
-    
-        resp_json = response.json()
-        if resp_json['message'] == "Export ready for download":
-            ready = True
-        else:
-            print(f"Sleeping for {interval_secs} seconds.  ({cnt} out of {wait_count})\r", end='')
-            time.sleep(interval_secs)
-            cnt += 1
+    while not ready and cnt < wait_count:
+        print(f"Sleeping for {interval_secs} seconds.  ({cnt} out of {wait_count})\r", end='')
+        time.sleep(interval_secs)
+        cnt += 1
+
+        ready = get_export_status(base_url, headers, search_id)
 
     print("")
     if cnt >= wait_count:
