@@ -21,8 +21,8 @@ RISK_METER_PAGE_SIZE = 100
 KENNA_BASE_URL = "https://api.kennasecurity.com/"
 
 # Dump JSON in a pretty format.  Great for debugging.
-def print_json(json_obj):
-    print(json.dumps(json_obj, sort_keys=True, indent=2))
+def dump_json(json_obj):
+    return (json.dumps(json_obj, sort_keys=True, indent=2))
 
 # Process an HTTP error by printing and log.error
 def process_http_error(msg, response, url):
@@ -96,6 +96,8 @@ def check_for_custom_field(base_url, headers, custom_field):
     # Check for other HTTP errors.
     if response.status_code != 200:
         process_http_error(f"Search Vulnerabilities API for custom field {custom_field} ", response, search_url)
+        if response.status_code == 401:
+           logging.error(f"HTTP header: {dump_json(headers)}")
         sys.exit(1)
     
     resp_json = response.json()
