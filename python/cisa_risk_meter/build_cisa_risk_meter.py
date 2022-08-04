@@ -5,20 +5,20 @@ import json
 import logging
 import requests
 
-# Humble constants.
-VERSION = 1.1
+VERSION = "1.2.0"
 
+# This might have to changed depending on your setup.
+KENNA_BASE_URL = "https://api.kennasecurity.com/"
+
+# Humble constants.
 API_MAX_PAGES = 20
 CISA_CUSTOM_FIELD_NAME = "CISA"
 CISA_RISK_METER_NAME = "CISA Exploited Vulnerabilities"
-VULN_UPDATE_LIMIT = 5000
+VULN_UPDATE_LIMIT = 2000
 
 # Maximum page size
 SEARCH_PAGE_SIZE = 5000
 RISK_METER_PAGE_SIZE = 100
-
-# This might have to changed depending on your setup.
-KENNA_BASE_URL = "https://api.kennasecurity.com/"
 
 # Dump JSON in a pretty format.  Great for debugging.
 def dump_json(json_obj):
@@ -257,10 +257,11 @@ if __name__ == "__main__":
         sys.exit(1)
     
     # HTTP headers for Kenna.
+    user_agent = f"build_cisa_risk_meter/{VERSION} (Kenna Security)"
     headers = {'X-Risk-Token': api_key,
                'Accept': 'application/json',
                'Content-Type': 'application/json; charset=utf-8',
-               'User-Agent': 'build_cisa_risk_meter/1.0.0 (Kenna Security)'}
+               'User-Agent': user_agent }
     
     # Kenna Base URL for all Kenna API endpoints.
     base_url = KENNA_BASE_URL
@@ -323,7 +324,7 @@ if __name__ == "__main__":
                 cve_vuln_id = cve_vuln['id']
                 logging.info(f"Add Vuln ID {cve_vuln_id} to custom field update list")
                 vulns_to_update.append(cve_vuln_id)
-                if len(vulns_to_update) > VULN_UPDATE_LIMIT:
+                if len(vulns_to_update) >= VULN_UPDATE_LIMIT:
                     update_cisa_vulns(base_url, headers, vulns_to_update, cisa_custom_field_id)
                     logging.info(f"Updated CISA custom field for {len(vulns_to_update)} vulns")
                     vulns_updated += len(vulns_to_update)
