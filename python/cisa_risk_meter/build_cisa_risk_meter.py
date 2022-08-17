@@ -153,10 +153,10 @@ def search_vulns_for_cve_id(base_url, headers, cve_id):
     
     # Assemble the Search Vulnerability URL.
     q_str = f"q=cve:{cve_id_str}"
-    search_url = f"{base_url}vulnerabilities/search?{q_str}&per_page={SEARCH_PAGE_SIZE}"
+    base_search_url = f"{base_url}vulnerabilities/search?{q_str}&per_page={SEARCH_PAGE_SIZE}"
 
     # Check for the one page case.
-    (vulnerabilities, meta_info) = search_vulns(search_url, headers)
+    (vulnerabilities, meta_info) = search_vulns(base_search_url, headers)
     if meta_info['page'] == 1:
         return vulnerabilities
 
@@ -168,7 +168,7 @@ def search_vulns_for_cve_id(base_url, headers, cve_id):
     # Loop through available pages colllecting vulnerabilities.
     page_num = 2
     while page_num <= max_pages:
-        search_url += f"&page={page_num}"
+        search_url = f"{base_search_url}&page={page_num}"
 
         (vulnerabilities, meta_info) = search_vulns(search_url, headers)
         vulns.append(vulnerabilities)
