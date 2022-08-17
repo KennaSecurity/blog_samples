@@ -5,7 +5,7 @@ import json
 import logging
 import requests
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 
 # This might have to changed depending on your setup.
 KENNA_BASE_URL = "https://api.kennasecurity.com/"
@@ -14,7 +14,7 @@ KENNA_BASE_URL = "https://api.kennasecurity.com/"
 API_MAX_PAGES = 20
 CISA_CUSTOM_FIELD_NAME = "CISA"
 CISA_RISK_METER_NAME = "CISA Exploited Vulnerabilities"
-VULN_UPDATE_LIMIT = 2000
+VULN_UPDATE_LIMIT = 5000
 
 # Maximum page size
 SEARCH_PAGE_SIZE = 5000
@@ -112,24 +112,11 @@ def check_for_custom_field(base_url, headers, custom_field):
     cisa_custom_field = get_custom_field(vulns[0], CISA_CUSTOM_FIELD_NAME)
     return cisa_custom_field['custom_field_definition_id']
 
-# CVE ID search.
-def search_vulns_for_cve_id(base_url, headers, cve_id):
-    logging.info(f"Searching vulnerabilities for CVE ID {cve_id}")
-
-    # Make a searchable CVE ID.
-    cve_str = cve_id[0:4].upper()
-    if cve_str != "CVE-":
-        print(f"Input is not a CVE, {cve_str}")
-        logging.error(f"Internal error: Expecting CVE, but it was {cve_str}")
-        sys.exit(1)
-
-    cve_id_str = cve_id[4:]
-    
-    # Assemble the Search Vulnerability URL.
-    q_str = f"q=cve:{cve_id_str}"
-    search_url = f"{base_url}vulnerabilities/search?{q_str}"
-    logging.info(f"Vulnerability CVE ID search URL: {search_url}")
+# Vulnerabilitity search specified by URL.  Return a tuple of vulnerabilities and metadata.
+def search_vulns(search_url, headers):
                
+    # Get all the vulnerabilities associated with the CVE via pagination.
+    logging.info(f"Vulnerability CVE ID search URL: {search_url}")
     try: 
        response = requests.get(search_url, headers=headers)
     except ConnectionError:
@@ -145,11 +132,49 @@ def search_vulns_for_cve_id(base_url, headers, cve_id):
 
     # Check for all other errors.
     if response.status_code != 200:
-        process_http_error(f"Search Vulnerabilities API with query string {q_str} ", response, search_url)
+        process_http_error(f"Search Vulnerabilities API", response, search_url)
         sys.exit(1)
     
     resp_json = response.json()
-    return resp_json['vulnerabilities']
+    return(resp_json['vulnerabilities'], resp_json['meta'])
+
+# CVE ID vulnerability search.
+def search_vulns_for_cve_id(base_url, headers, cve_id):
+    logging.info(f"Searching vulnerabilities for CVE ID {cve_id}")
+
+    # Make a searchable CVE ID.
+    cve_str = cve_id[0:4].upper()
+    if cve_str != "CVE-":
+        print(f"Input is not a CVE, {cve_str}")
+        logging.error(f"Internal error: Expecting CVE, but it was {cve_str}")
+        sys.exit(1)
+
+    cve_id_str = cve_id[4:]
+    
+    # Assemble the Search Vulnerability URL.
+    q_str = f"q=cve:{cve_id_str}"
+    search_url = f"{base_url}vulnerabilities/search?{q_str}&per_page={SEARCH_PAGE_SIZE}"
+
+    # Check for the one page case.
+    (vulnerabilities, meta_info) = search_vulns(search_url, headers)
+    if meta_info['page'] == 1:
+        return vulnerabilities
+
+    # Multi-page case.  First append vulnerabilitie from page one.
+    vulns = []
+    vulns.append(vulnerabilities)
+    max_pages = meta_info['pages']
+
+    # Loop through available pages colllecting vulnerabilities.
+    page_num = 2
+    while page_num <= max_pages:
+        search_url += f"&page={page_num}"
+
+        (vulnerabilities, meta_info) = search_vulns(search_url, headers)
+        vulns.append(vulnerabilities)
+        page_num += 1
+
+    return vulns
 
 def update_cisa_vulns(base_url, headers, vuln_ids, custom_field_id):
     if len(vuln_ids) == 0:
@@ -242,6 +267,7 @@ def create_risk_meter(base_url, headers, risk_meter_name, cisa_custom_field_id):
 if __name__ == "__main__":
     logging_file_name = "cisa_vulns.log"
     logging.basicConfig(filename=logging_file_name, level=logging.INFO)
+    logging.info("-----------------------------------------------------------")
     process_info(f"Build CISA Exploited Vulnerabilities Risk Meter v{VERSION}")
 
     cisa_custom_field_id = 0
@@ -315,6 +341,9 @@ if __name__ == "__main__":
         # Search for vulns associated with the CVE ID.
         cve_vulns = search_vulns_for_cve_id(base_url, headers, cisa_cve_id)
         print(".",  end='', flush=True)
+        if len(cve_vulns) == 0:
+            logging.info(f"All {cisa_cve_id} vulnerabilities have already been marked.")
+            continue
 
         # Check in CISA custom field is assiocated with each vulnerability.
         # If not, add it to the list.
@@ -325,6 +354,7 @@ if __name__ == "__main__":
                 logging.info(f"Add Vuln ID {cve_vuln_id} to custom field update list")
                 vulns_to_update.append(cve_vuln_id)
                 if len(vulns_to_update) >= VULN_UPDATE_LIMIT:
+                    print("")
                     update_cisa_vulns(base_url, headers, vulns_to_update, cisa_custom_field_id)
                     logging.info(f"Updated CISA custom field for {len(vulns_to_update)} vulns")
                     vulns_updated += len(vulns_to_update)
