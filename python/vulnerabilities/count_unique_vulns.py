@@ -240,7 +240,7 @@ def write_csv_file(sorted_cve_counts):
     print_info(f"{csv_filename} is now available.")
 
 if __name__ == "__main__":
-    logging_file_name = "custom_fields.log"
+    logging_file_name = "uniq_vulns.log"
     logging.basicConfig(filename=logging_file_name, level=logging.INFO)
     print_info(f"Count Unique CVE IDs v{VERSION}")
 
