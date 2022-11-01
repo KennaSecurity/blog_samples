@@ -183,7 +183,7 @@ def count_lines(vuln_file_name):
     # Add one to the number of lines because the end of files does not have '\n'.
     return lines + 1
 
-def convert_to_json(vuln_line):
+def convert_from_jsonl(vuln_line):
     try:
         vuln = json.loads(vuln_line.strip())
     except json.JSONDecodeError:
@@ -213,7 +213,7 @@ def process_vuln_export(jsonl_vuln_file_name, cve_counts):
     # Open the JSONL file and read it line by line, checking each vulnerability line for custom fields.
     with open(jsonl_vuln_file_name, 'r') as jsonl_f:
         for line_num, vuln_line in enumerate(jsonl_f):
-            vuln = convert_to_json(vuln_line)
+            vuln = convert_from_jsonl(vuln_line)
             if "cve_id" in vuln:
                 process_cve_id_in_vuln(vuln, cve_counts)
                 #logging.info(f"Found cve_id {vuln['cve_id']} in vuln {line_num}")
