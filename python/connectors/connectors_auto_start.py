@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # HTTP headers.
     headers = {'X-Risk-Token': api_key,
                'Content-Type': 'application/json; charset=utf-8',
-               'User-Agent': 'sample.connector_ui/1.0.0 (Cisco Secure)'}
+               'User-Agent': 'automate_connector_run/1.0.0 (Kenna Security)'}
     
     # You might have to change this depending on your deployment.
     base_url = "https://api.kennasecurity.com/"
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         # Obtain the connector runs for a connector.
         connector_runs = get_connector_runs(base_url, headers, id)
         if len(connector_runs) == 0:
-            conn_tbl.add_row([name, "has no connectorruns"])
+            conn_tbl.add_row([name, "has no connector runs"])
             continue
 
         # Only check the latest run
