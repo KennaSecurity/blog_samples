@@ -1,4 +1,4 @@
-# Checks if connector will run based on the number of interval hours between the
+# Checks if onnector will run based on the number of interval hours between the
 # last run and now.
 
 import os
@@ -6,6 +6,7 @@ import sys
 import json
 import requests
 from datetime import datetime, timedelta
+from prettytable import PrettyTable
 
 # Returns connector information from the List Connectors API.
 def get_connectors(base_url, headers):
@@ -23,38 +24,22 @@ def get_connectors(base_url, headers):
     return connectors
 
 # Gets the connector runs for the specified connector ID.
-def get_connector_runs(base_url, headers, connector_id):
+def get_connector_runs(base_url, headers, connector_id, connector_name):
     connector_runs = []
     get_connector_runs_url = base_url + "connectors/" + str(connector_id) + "/connector_runs"
 
     response = requests.get(get_connector_runs_url, headers=headers)
     if response.status_code != 200:
-        print(f"List Connector Runs Error: {response.status_code} with {get_connector_runs_url}")
+        print(f"List Connector Runs Error: {response.status_code} for {connector_name} with {get_connector_runs_url}")
+        print(f"More Info:\n {response.text}")
         sys.exit(1)
     
     resp_json = response.json()
     
     return resp_json
 
-def list_connectors(connectors):
-    print("")
-    pad = 1 if len(connectors) < 9 else 2
-    conn_pad = " " * (pad+2)
-    print(f"{conn_pad}Connector Name")
-    print(f"{conn_pad}~~~~~~~~~~~~~~")
-
-    i = 1
-    for connector in connectors:
-        if connector['running']:
-            print(f"{i:{pad}}: {connector['name']}\t running")
-        else:
-            print(f"{i:{pad}}: {connector['name']}")
-        i += 1
-
-    print("")
-
 def dump_connector_run(connector_run):
-    print(json.dumps(connector_runs, sort_keys=True, indent=2))
+    print(json.dumps(connector_run, sort_keys=True, indent=2))
     print("")
 
 def dump_connector_runs(connector_runs):
@@ -80,8 +65,7 @@ if __name__ == "__main__":
             print(f"{sys.argv[1]} is not a valid integer.")
             sys.exit(1)
 
-    print("Connector Auto Start")
-    print("")
+    print("List Connector Runs")
 
     # Obtain the Kenna Security API key from an environment variable.
     api_key = os.getenv('KENNA_API_KEY')
@@ -99,34 +83,68 @@ if __name__ == "__main__":
     
     # Obtain the initial list of connectors and their state.
     connectors = get_connectors(base_url, headers)
-    list_connectors(connectors)
+    print(f"Gathering connection run information for {len(connectors)} connectors.")
+    print("")
+
+    # Initialize the table.
+    conn_tbl = PrettyTable()
+    conn_tbl.field_names = ["ID", "Connector Name", "Status", "Substatus"]
+    conn_tbl.align["ID"] = "l"
+    conn_tbl.align["Connector Name"] = "l"
+    conn_tbl.align["Status"] = "l"
+    conn_tbl.align["Substatus"] = "l"
+    conn_tbl.border = False
+    conn_tbl.add_row(["~~", "~~~~~~~~~~~~~~", "~~~~~~", "~~~~~~~~~"])
 
     for connector in connectors:
         id = connector['id']
         name = connector['name']
+        row = []
+        row.append(id)
+        row.append(name)
 
+        file_connector = ""
         if connector['host'] == None:
-            print(f"{name} is a file connector.")
-            continue    
+            file_connector = "(file)"
 
-        connector_runs = get_connector_runs(base_url, headers, id)
+        if connector['running']:
+            row.append(f"running {file_connector}") 
+        else:
+            row.append(f"idle {file_connector}") 
+
+        connector_runs = get_connector_runs(base_url, headers, id, name)
         if len(connector_runs) == 0:
-            print(f"{name} has no runs.")
+            row.append("has no runs")
+            conn_tbl.add_row(row)
             continue
 
         first_run = connector_runs[0] 
+        run_id = first_run['id']
+
+        if first_run['start_time'] is None:
+            row.append(f"{run_id}")
+            conn_tbl.add_row(row)
+            continue 
+
         start_datetime = parse_time_str(first_run['start_time'])
         if first_run['end_time'] is None:
-            print(f"{name} still running. (end time null)")
+            row.append(f"{run_id}: still running")
+            conn_tbl.add_row(row)
             continue 
         end_datetime = parse_time_str(first_run['end_time'])
  
         if end_datetime < start_datetime:
-            print(f"{name} still running.")
+            row.append(f"{run_id}: still running")
+            conn_tbl.add_row(row)
             continue  # Still running
 
         if (end_datetime + timedelta(hours=interval_hours)) > datetime.now():
-            print(f"{name} has to wait {interval_hours} hours past {end_datetime}.")
+            row.append(f"{run_id}: has to wait {interval_hours} hours past {end_datetime}")
+            conn_tbl.add_row(row)
             continue  # Not interval hours yet
 
-        print(f"Time to launch {name}.")
+        row.append(f"{run_id}: Time to launch")
+        conn_tbl.add_row(row)
+
+    print(conn_tbl)
+
