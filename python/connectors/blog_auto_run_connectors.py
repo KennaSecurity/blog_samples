@@ -91,6 +91,7 @@ def upload_and_run_file_connector(base_url, headers, connector_id, connector_nam
         sys.exit(1)
     
     return resp_json['connector_run_id']
+
 # Starts a connector run based on the connector ID and returns a connector run ID.
 def run_connector(base_url, headers, connector_id, connector_name):
     run_connector_url = f"{base_url}connectors/{connector_id}/run"
@@ -198,7 +199,7 @@ if __name__ == "__main__":
         if connector['host'] is None:
             (file_ok, upload_file_name) = forge_and_verify_file_name(name)
             if not file_ok:
-                conn_tbl.add_row([name, f"is a file base connector ({upload_file_name})"])
+                conn_tbl.add_row([name, f"file based connector expecting {upload_file_name}"])
                 continue
 
             # Run the connector if the file is younger the last connection run.
