@@ -1,4 +1,4 @@
-# Checks if onnector will run based on the number of interval hours between the
+# Checks if connector will run based on the number of interval hours between the
 # last run and now.
 
 import os
