@@ -32,7 +32,7 @@ def get_connector_runs(base_url, headers, connector_id, connector_name):
     if response.status_code != 200:
         print(f"List Connector Runs Error: {response.status_code} for {connector_name} with {get_connector_runs_url}")
         print(f"More Info:\n {response.text}")
-        sys.exit(1)
+        return []
     
     resp_json = response.json()
     
