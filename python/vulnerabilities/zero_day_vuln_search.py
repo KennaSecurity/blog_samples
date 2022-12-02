@@ -1,16 +1,36 @@
 import os
 import sys
-import json
+import logging
 import requests
 
 VERSION = "1.0.0"
 
+# Print and log information.
+def print_info(msg):
+    print(msg)
+    logging.info(msg)
+
+# Print and log warning information.
+def print_warning(msg):
+    print(msg)
+    logging.warning(msg)
+
+# Print and log error information.
+def print_error(msg):
+    print(msg)
+    logging.error(msg)
+
 # Process an HTTP error by printing and log.error
 def process_http_error(msg, response, url):
     if response.text is None:
-        print(f"{msg} HTTP Error: {response.status_code} with {url}")
+        print_error(f"{msg} HTTP Error: {response.status_code} with {url}")
     else:
-        print(f"{msg}, {url} status_code: {response.status_code} info: {response.text}")
+        print_error(f"{msg}, {url} status_code: {response.status_code} info: {response.text}")
+
+# Forge a log file name for the program name.
+def forge_log_file_name(program_file_name):
+    prog_file_name_root = os.path.splitext(program_file_name)
+    return prog_file_name_root[0] + ".log"
 
 # Performs a search for vulnerabilities with zero day information.
 def search_vulns_for_zero_day(base_url, headers):
@@ -46,8 +66,9 @@ def talos_url_exists(talos_id):
         response = requests.get(talos_vuln_url)
         if response.status_code == 200:
             return talos_vuln_url
+        process_http_error("Talos report not available", talos_vuln_url)
     except:
-        pass
+        logging.warning(f"Talos report does not exist at: {talos_vuln_url}")
 
     return None
 
@@ -65,10 +86,12 @@ def print_vuln_info(vuln_data):
 
     if "solution" in vuln_data and not vuln_data['solution'] is None:
         print(f"solution: {vuln_data['solution']}")
+    else:
+        logging.warning(f"Solution does not exist for {vuln_id}")
 
 def print_talos_data(vuln_data):
     if not "talos_zero_day" in vuln_data:
-        print(f"Talos zero day data is not present")
+        print_warning(f"Talos zero day data is not present for {vuln_data['id']}")
         return 
 
     zero_day_data = vuln_data['talos_zero_day']
@@ -82,6 +105,7 @@ def print_talos_data(vuln_data):
 
 def print_cvss3_info(vuln_data):
     if not "cvss_v3" in vuln_data or vuln_data['cvss_v3'] is None:
+        logging.warning(f"CVSS v3 information does not exist {vuln_data['id']}")
         return
 
     cvss_v3_data = vuln_data['cvss_v3']
@@ -89,22 +113,25 @@ def print_cvss3_info(vuln_data):
     print(f"CVSS v3 impact score: {cvss_v3_data['impact_score']}, temporal score: {cvss_v3_data['temporal_score']}")
 
 if __name__ == "__main__":
+    logging_file_name = forge_log_file_name(sys.argv[0])
+    logging.basicConfig(filename=logging_file_name, level=logging.INFO)
+    print_info(f"Search for Zero Day Vulnerabilities v{VERSION}")
 
     # Obtain the Kenna Security API key.
     api_key = os.getenv('KENNA_API_KEY')
     if api_key is None:
-        print(f"Environment variable KENNA_API_KEY is non-existent")
+        print_error(f"Environment variable KENNA_API_KEY is non-existent")
         sys.exit(1)
     
     # HTTP headers for Kenna.
-    user_agent = f"search_vulns_for_zero_day/{VERSION} (Kenna Security)"
+    user_agent = f"zero_day_vuln_search/{VERSION} (Kenna Security)"
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json; charset=utf-8',
                'X-Risk-Token': api_key,
                'User-Agent': user_agent}
 
     # You might have to change this depending on your deployment.
-    base_url = "https://api.us.kennasecurity.com"
+    base_url = "https://api.stg1.us.kennasecurity.com"
     
     zero_day_resp = search_vulns_for_zero_day(base_url, headers)
     zero_day_vulns = zero_day_resp['vulnerabilities']
