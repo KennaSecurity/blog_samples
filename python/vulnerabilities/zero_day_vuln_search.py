@@ -131,7 +131,7 @@ if __name__ == "__main__":
                'User-Agent': user_agent}
 
     # You might have to change this depending on your deployment.
-    base_url = "https://api.stg1.us.kennasecurity.com"
+    base_url = "https://api.us.kennasecurity.com"
     
     zero_day_resp = search_vulns_for_zero_day(base_url, headers)
     zero_day_vulns = zero_day_resp['vulnerabilities']
