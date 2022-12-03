@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     # You might have to change this depending on your deployment.
     base_url = "https://api.us.kennasecurity.com"
-    
+
     zero_day_resp = search_vulns_for_zero_day(base_url, headers)
     zero_day_vulns = zero_day_resp['vulnerabilities']
     print(f"Number of zero day vulns: {len(zero_day_vulns)}\n")
