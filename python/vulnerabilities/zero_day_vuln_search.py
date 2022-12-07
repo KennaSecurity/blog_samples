@@ -79,7 +79,7 @@ def print_vuln_info(vuln_data):
     print(f"Vuln ID: {vuln_id}, Created at: {vuln_data['created_at']}, Last Seet at: {vuln_data['last_seen_time']}")
     print(f"CVE ID: {vuln_data['cve_id']}")
     if "identifiers" in vuln_data and len(identifers) > 0:
-        print("Indentifers: ", end='')
+        print("Identifers: ", end='')
         print(*identifers, sep=',')
     print(f"Description: {vuln_data['description']}")
     print(f"Asset ID: {vuln_data['asset_id']}")
