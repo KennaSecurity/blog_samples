@@ -22,5 +22,6 @@ To run the code:
 * `python blog_auto_run_connectors.py`
 
 ## More Information
-* [Automation Connector Runs](https://www.kennasecurity.com/blog/automating-connector-runs-api/) blog for `connectors_auto_start.py`
+* [Automation Connector Runs](https://www.kennasecurity.com/blog/automating-connector-runs-api/), blog for `connectors_auto_start.py`
+* [Uploading a File to a Connector](https://www.kennasecurity.com/blog/uploading-a-file-to-a-connector/), blog for `blog_auto_run_connectors.py`
 * [What is a Connector?](https://help.kennasecurity.com/hc/en-us/articles/201922028-What-is-a-connector-)
