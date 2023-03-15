@@ -114,7 +114,8 @@ def print_cvss3_info(vuln_data):
 
 if __name__ == "__main__":
     logging_file_name = forge_log_file_name(sys.argv[0])
-    logging.basicConfig(filename=logging_file_name, level=logging.INFO)
+    logging_format = "%(asctime)s %(levelname)s %(message)s"
+    logging.basicConfig(filename=logging_file_name, level=logging.INFO, format=logging_format)
     print_info(f"Search for Zero Day Vulnerabilities v{VERSION}")
 
     # Obtain the Kenna Security API key.

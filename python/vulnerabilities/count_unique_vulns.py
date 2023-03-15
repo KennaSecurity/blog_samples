@@ -241,8 +241,9 @@ def write_csv_file(sorted_cve_counts):
 
 if __name__ == "__main__":
     logging_file_name = "uniq_vulns.log"
-    logging.basicConfig(filename=logging_file_name, level=logging.INFO)
-    print_info(f"Count Unique CVE IDs v{VERSION}")
+    logging_format = "%(asctime)s %(levelname)s %(message)s"
+    logging.basicConfig(filename=logging_file_name, level=logging.INFO, format=logging_format)
+    print_info(f"Count Unique Vulnerabilities v{VERSION}")
 
     # Process command line arguments.
     id = 0
