@@ -14,7 +14,7 @@ def get_custom_field_defs(base_url, headers):
 
     response = requests.get(list_custom_field_defs_url, headers=headers)
     if response.status_code != 200:
-        print(f"List Risk Meters Error: {response.status_code} with {list_custom_field_defs_url}")
+        print(f"List Custom Field Defintions Error: {response.status_code} with {list_custom_field_defs_url}")
         sys.exit(1)
 
     resp_json = response.json()
