@@ -1,4 +1,4 @@
-# Add a custom field to one vulnerability.
+# Add a custom field to vulnerabilities via a CSV file.
 #
 # This script requires one command line parameter: the input CSV file name.
 # The CSV file contains the custom field defintion parameters, the custom field value,
