@@ -10,7 +10,7 @@ import csv
 import json
 import requests
 
-# Dump JSON is a readable format.
+# Dump JSON in a readable format.
 def print_json(json_obj):
     print(json.dumps(json_obj, sort_keys=True, indent=2))
 
@@ -23,7 +23,7 @@ def get_custom_field_definitions(base_url, headers):
     # Dictionary of custom field definitions.
     custom_field_defs = {}
 
-    list_custom_field_defs_url = f"{base_url}custom_field_definitions"
+    list_custom_field_defs_url = f"{base_url}/custom_field_definitions"
 
     # List the the custom fields.  Only the first 100 with the code.
     response = requests.get(list_custom_field_defs_url, headers=headers)
@@ -81,7 +81,7 @@ def process_input_file(csv_input_file_name):
 
 # Create a custom field defintion.
 def create_custom_field_definition(base_url, headers, cfd_dict):
-    create_url = f"{base_url}custom_field_definitions"
+    create_url = f"{base_url}/custom_field_definitions"
 
     payload = {}
     payload['name'] = cfd_dict['name']
@@ -105,7 +105,7 @@ def create_custom_field_definition(base_url, headers, cfd_dict):
 def update_vuln(base_url, headers, vuln_id, custom_field_def_id, custom_field_value):
     vuln_id = vuln_id.strip()
 
-    update_url = f"{base_url}vulnerabilities/{vuln_id}"
+    update_url = f"{base_url}/vulnerabilities/{vuln_id}"
     update_custom_field_id = f"{custom_field_def_id}"
     update_data = {
         "vulnerability": {
@@ -153,8 +153,7 @@ if __name__ == "__main__":
                'Content-Type': 'application/json; charset=utf-8',
                'User-Agent': 'add_custom_field_definitions/1.0.0 (Kenna Security)'}
     
-    base_url = "https://api.kennasecurity.com/"
-    v2_base_url = "https://api.kennasecurity.com/v2/"
+    v2_base_url = "https://api.kennasecurity.com/v2"
 
     custom_field_defs = get_custom_field_definitions(v2_base_url, headers)
     print(f"{len(custom_field_defs)} custom field definitions exist.")
@@ -166,6 +165,9 @@ if __name__ == "__main__":
     # else create new custom field defintion.
     for key, csv_custom_field_def in csv_custom_field_defs.items():
         print(f"{key} -> {csv_custom_field_def}")
+        if csv_custom_field_def['data_type'] == "attachment":
+            print(f"{key} -> Attachment data_type is not supported.")
+            continue
         
         if key in custom_field_defs:
             cfd_id = compare_custom_field_defs(custom_field_defs[key], csv_custom_field_def)

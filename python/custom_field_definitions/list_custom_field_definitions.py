@@ -10,7 +10,7 @@ from prettytable import PrettyTable
 # custom field definition score, and last update time.
 def get_custom_field_defs(base_url, headers):
     custom_field_defs = {}
-    list_custom_field_defs_url = f"{base_url}custom_field_definitions"
+    list_custom_field_defs_url = f"{base_url}/custom_field_definitions"
 
     response = requests.get(list_custom_field_defs_url, headers=headers)
     if response.status_code != 200:
@@ -49,9 +49,9 @@ if __name__ == "__main__":
                'User-Agent': 'sample.list_custom_field_definitions/1.0.0 (Cisco Secure)'}
 
     # You might have to change this depending on your deployment.
-    base_url = "https://api.kennasecurity.com/v2/"
+    v2_base_url = "https://api.kennasecurity.com/v2"
 
-    custom_field_defs = get_custom_field_defs(base_url, headers)
+    custom_field_defs = get_custom_field_defs(v2_base_url, headers)
 
     print("")
     print("Custom Field Definitions")
