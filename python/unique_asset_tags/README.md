@@ -13,7 +13,7 @@ This directory contains the following files:
 1. Set the environent variable $KENNA_API_KEY
    * In Windows: https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html
    * In DOS: `set KENNA_API_KEY=<your API key>`
-   * In Linux: `export KENNA_API_KEY="<your API key>"`
+   * In Linux: `export KENNA_API_KEY='<your API key>'`
 1. Run the program: `python blog1_uniq_asset_tags.py`
 
 ### Options
