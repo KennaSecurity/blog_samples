@@ -1,0 +1,13 @@
+---
+# base_url is the API server
+# If not specified, "https://api.kennasecurity.com" is used.
+base_url: "https://api.trial1.us.kennasecurity.com"
+
+# fields is string list of fields that are returned in the JSON output file.
+# If not specified, all fields are returned.
+fields: "asset_id,id,description,solution"
+
+# output_file_name is the name of the JSON output file.
+# File name must have "json" as the file extension.
+# If not specified, "vulns_info.json" is used.
+#output_file_name: "vuln_info.json"
