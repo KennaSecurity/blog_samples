@@ -11,7 +11,7 @@ This directory contains 5 files:
 * export_asset_vulns.py - Collects vulneratibility information per asset from an asset export.
 * asset_group_vulns.py - Collects vulnerability information per asset group.  See below for more details.
 
-## asset_group_vulns..py
+## asset_group_vulns.py
 
 Obtains vulnerability information via assets in an asset group.  From that asset search, asset IDs are collected and a vulnerability search is performed using the collected asset IDs.  Output is to a configurable JSON file.  Please read the configuration file named below for details.
 
