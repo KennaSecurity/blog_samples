@@ -1,3 +1,5 @@
+# Finds assets that have specified connector tags.
+
 from json.tool import main
 import os
 import sys
@@ -130,6 +132,7 @@ def get_connectors_by_id(base_url, headers):
     return connectors_by_id
 
 # Retrieve the scanner tags and put then in a dictionary key by scanner tag.
+# Scanner tags are the specified connector tags from external scanners.
 def get_scanner_tags(input_tags_file_name):
     scanner_tags = {}
     num_tags = 0
@@ -284,8 +287,7 @@ def tags_in_list(tags_to_process, scanner_tags):
         
     return False
 
-# Get the connector information and associate them with the tag
-# if in the list of scanner tags.
+# Get the connector information and associate it with the tag.
 def get_connector_info(tag_info:Tag_Info, tag_connectors):
 
     for connector in tag_connectors:
@@ -296,7 +298,7 @@ def get_connector_info(tag_info:Tag_Info, tag_connectors):
     
     return 
 
-# Obtains the asset tags and return asset connector tags.
+# Obtains the asset tags via an API and return asset connector tags.
 def get_asset_tags(base_url, headers, asset_id):
     
     tag_request_url = f"{base_url}/assets/{asset_id}/tags"
@@ -311,7 +313,8 @@ def get_asset_tags(base_url, headers, asset_id):
 
     return tag_info
 
-# Get the connector tags for an asset.
+# Get the scanner connector tags for an asset.  Build an asset object
+# containing the scanner connector tags with the connector names.
 def get_asset_connector_tags(asset_info:Asset_Info, asset_tags, scanner_tags):
     num_connector_tags = 0
 
@@ -331,13 +334,13 @@ def get_asset_connector_tags(asset_info:Asset_Info, asset_tags, scanner_tags):
 
     return num_connector_tags
 
-# Write a line of JSON.
+# Write a line of JSON, or write JSONL.
 def write_jsonl(jsonl_f, asset_info:Asset_Info):
     out_line = json.dumps(asset_info)
     jsonl_f.write(f"{out_line}\n")
 
 if __name__ == "__main__":
-# See if an ID is passed in.
+    # Open up the log file.
     logging_file_name = "connector_asset_tags.log"
     logging.basicConfig(filename=logging_file_name, level=logging.INFO)
     print_info(f"Connector Asset Tags")
@@ -382,6 +385,7 @@ if __name__ == "__main__":
     asset_file_name = f"assets_{search_id}"
     jsonl_asset_file_name = f"{asset_file_name}.jsonl"
 
+    # Check in an unzip JSONL file already exists.
     if not json_file_exists(jsonl_asset_file_name):
         check_export_status(base_url, headers, search_id, num_assets)
         retrieve_asset_data(base_url, headers, search_id, asset_file_name, jsonl_asset_file_name)
@@ -402,6 +406,7 @@ if __name__ == "__main__":
     asset_with_tags_count = 0
     connector_tag_count = 0
 
+    # Go through the asset JSONL file asset by asset.
     with open(jsonl_asset_file_name, 'r') as jsonl_f:
         for line_num, asset_line in enumerate(jsonl_f):
             asset_count += 1
@@ -430,7 +435,7 @@ if __name__ == "__main__":
             asset_info = Asset_Info(asset)
             # logging.info(f"Processing asset {asset_info.asset_locator} connector tags.")
 
-            # Determine if the asset has connector tags.
+            # Determine if the asset has scanner connector tags.
             num_connector_tags = get_asset_connector_tags(asset_info, asset_tags, scanner_tags)
             if num_connector_tags == 0:
                 # logging.info(f"No connector tags for asset {asset_info.asset_locator}")
