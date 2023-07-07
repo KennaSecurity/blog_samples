@@ -4,6 +4,7 @@ from json.tool import main
 import os
 import sys
 import time
+import datetime
 import json
 import argparse
 import logging
@@ -88,7 +89,7 @@ def get_command_line_options():
                             dest='search_id',
                             required=False,
                             default=0,
-                            help="Previous search ID.")
+                            help="Previous export search ID.")
 
     # Parse and return results.
     args = arg_parser.parse_args()
@@ -151,10 +152,19 @@ def get_scanner_tags(input_tags_file_name):
     print_info(f"Number of scanner tags: {num_tags}")
     return scanner_tags
 
-# Invoke the data_exports API to request an asset export.
-def request_asset_exports(base_url, headers):
-    request_export_url = base_url + "/data_exports"
-
+# Invoke the data_exports API to request an asset export filtered by tags.
+def request_asset_exports(base_url, headers, tags):
+    request_export_url = f"{base_url}/data_exports"
+ 
+    # If there are tags, add the tags in the URL.
+    if len(tags) != 0:
+        request_export_url += "?"
+        for tag in tags:
+            request_export_url += f"tags[]={tag}&"
+        
+        # Remove trailing ampersand.
+        request_export_url = request_export_url[:-1]
+    
     filter_params = {
         'status' : ['active'],
         'export_settings': {
@@ -163,6 +173,7 @@ def request_asset_exports(base_url, headers):
         }
     }
     
+    logging.info(f"Request export URL: {request_export_url}")
     response = requests.post(request_export_url, headers=headers, data=json.dumps(filter_params))
     if response.status_code != 200:
         process_http_error(f"Request Data Export API Error", response, request_export_url)
@@ -226,7 +237,7 @@ def json_file_exists(jsonl_asset_file_name):
 def retrieve_asset_data(base_url, base_headers, id, asset_file_name, jsonl_asset_file_name):
     gz_asset_file_name = f"{asset_file_name}.gz"
 
-    get_data_url = base_url + "/data_exports/?search_id=" + id
+    get_data_url = f"{base_url}/data_exports/?search_id={id}"
     headers = base_headers.copy()
     headers['Accept'] = "application/gzip; charset=utf-8"
     
@@ -302,10 +313,48 @@ def get_connector_info(tag_info:Tag_Info, tag_connectors):
 def get_asset_tags(base_url, headers, asset_id):
     
     tag_request_url = f"{base_url}/assets/{asset_id}/tags"
+    num_connection_trys = 0
+    max_connection_trys = 10
+    wait_secs = 60 
 
-    response = requests.get(tag_request_url, headers=headers)
-    if response.status_code != 200:
-        process_http_error(f"List asset tags API Error", response, tag_request_url)
+    # Handle time-out errors when obtaining asset tag information.
+    while num_connection_trys < max_connection_trys:
+        try:
+            response = requests.get(tag_request_url, headers=headers)
+        except ConnectionError:
+            num_connection_trys += 1
+            print_error(f"Connection error on URL: {tag_request_url}.  Waiting {wait_secs} seconds.")
+            time.sleep(wait_secs)
+            response = requests.get(tag_request_url, headers=headers)
+        except requests.exceptions.ReadTimeout:
+            num_connection_trys += 1
+            print_error(f"Read time-out error on URL: {tag_request_url}.  Waiting {wait_secs} seconds")
+            time.sleep(wait_secs)
+        else:
+            if response.status_code == 200:
+                break
+
+            num_connection_trys += 1
+            if response.status_code == 429:
+                logging.warning(f"Too many asset tag requests using URL {tag_request_url}.  Waiting 5 seconds.")
+                time.sleep(5)
+            elif response.status_code == 500:
+                print_error(f"Internal server error on URL: {tag_request_url}.  Waiting {wait_secs} seconds")
+                time.sleep(wait_secs)
+            elif response.status_code == 502:
+                print_error(f"Invalid response from gateway on URL: {tag_request_url}.  Waiting {wait_secs} seconds")
+                time.sleep(wait_secs)
+            elif response.status_code == 504:
+                print_error(f"Gateway time-out on URL: {tag_request_url}.  Waiting {wait_secs} seconds")
+                time.sleep(wait_secs)
+            else:
+                process_http_error(f"List asset tags API Error", response, tag_request_url)
+                sys.exit(1)
+
+    # Check to see if we failed miserably.
+    if num_connection_trys >= max_connection_trys:
+        time_waited_in_minutes = (num_connection_trys * wait_secs) / 60
+        print_error(f"Tried {time_waited_in_minutes} minutes.")
         sys.exit(1)
 
     resp = response.json()
@@ -342,7 +391,8 @@ def write_jsonl(jsonl_f, asset_info:Asset_Info):
 if __name__ == "__main__":
     # Open up the log file.
     logging_file_name = "connector_asset_tags.log"
-    logging.basicConfig(filename=logging_file_name, level=logging.INFO)
+    logging_format = "%(asctime)s %(levelname)s %(message)s"
+    logging.basicConfig(filename=logging_file_name, level=logging.INFO, format=logging_format)
     print_info(f"Connector Asset Tags")
 
     # Get command line arguments.
@@ -364,19 +414,19 @@ if __name__ == "__main__":
                'User-Agent': 'connector_asset_tags/1.0.0 (Kenna Security)'}
 
     # You might have to change this depending on your deployment.
-    base_url = "https://api.kennasecurity.com/"
+    base_url = "https://api.kennasecurity.com"
     
     # Default the number of assets.
     num_assets = 50000
+        
+    # Get scanner tag list from a file.
+    scanner_tags = get_scanner_tags(input_tags_file_name)
 
     # If ID is not defined then request an asset export.
     if search_id == 0:
-        (search_id, num_assets) = request_asset_exports(base_url, headers)
+        (search_id, num_assets) = request_asset_exports(base_url, headers, scanner_tags)
         print_info(f"New search ID {search_id} with {num_assets} assets.")
 
-    # Get scanner tag list from a file.
-    scanner_tags = get_scanner_tags(input_tags_file_name)
-        
     # Get a list of connectors mapping connector ID to name.
     Connector_Info.connectors_by_id = get_connectors_by_id(base_url, headers)
 
@@ -400,18 +450,33 @@ if __name__ == "__main__":
         print_error(f"File {output_asset_tags_file_name} not found.")
         sys.exit(1)
 
+    # These intervals could be configurable.
     print_interval = 50
+    rest_interval = print_interval * 20
+
+    # Intialize asset tag object and counters.
     asset_tags = {} 
     asset_count = 0
     asset_with_tags_count = 0
     connector_tag_count = 0
 
+    # And we're off!
+    start_time = time.time()
+
     # Go through the asset JSONL file asset by asset.
     with open(jsonl_asset_file_name, 'r') as jsonl_f:
         for line_num, asset_line in enumerate(jsonl_f):
             asset_count += 1
+            
+            # Log every print interval, and rest every rest interval.
             if asset_count % print_interval == 0:
-                logging.info(f"{asset_count} processed")
+                if asset_count % rest_interval == 0:
+                    curr_time = time.time()
+                    time_diff_str = str(datetime.timedelta(seconds=(curr_time - start_time)))
+                    print_info(f"{asset_count} processed out of {num_assets} ({time_diff_str}). Five second rest.")
+                    time.sleep(5)
+                else:
+                    logging.info(f"{asset_count} processed")
 
             # One JSON line is an asset.
             asset = json.loads(asset_line.strip())
@@ -447,4 +512,7 @@ if __name__ == "__main__":
             write_jsonl(out_file_f, asset_info)
                 
     out_file_f.close()
-    print_info(f"Total {asset_count} assets processed with {asset_with_tags_count} assets with tags with {connector_tag_count} connector tags.")
+    
+    end_time = time.time()
+    time_diff_str = str(datetime.timedelta(seconds=(end_time - start_time)))
+    print_info(f"It {time_diff_str} to process {asset_count} assets with {asset_with_tags_count} assets with tags and {connector_tag_count} connector tags.")

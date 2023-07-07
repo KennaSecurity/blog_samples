@@ -52,3 +52,7 @@ You can also run the script with a previous search ID. This will first look for 
 
 The input file, `scanner_tags.txt` contains the scanner connector tags that will be used to identify assets. Each line of the file contains one scanner connector tag.
 
+### Notes
+* It takes approximately four hours 15 minutes to process 50,000 assets.
+* The log file is `connector_asset_tags.log`.  The file has to be manually removed to start with a clean log.
+
