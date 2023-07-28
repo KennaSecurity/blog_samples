@@ -8,7 +8,7 @@
 `pip -r requirements.txt`
 
 ### Operations
-`python blog_get_vuln_details.py -h` for help
-`python blog_get_vuln_details.py` to export and process.
-`python blog_get_vuln_details.py <export ID>` to process existing export.
+* `python blog_get_vuln_details.py -h` for help
+* `python blog_get_vuln_details.py` to export and process.
+* `python blog_get_vuln_details.py <export ID>` to process existing export.
 
