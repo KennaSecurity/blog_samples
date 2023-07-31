@@ -1,0 +1,7 @@
+#
+# Requirements for vuln_details.
+#
+requests==2.25.1
+json2html==1.3.0
+html_sanitizer==2.2.0
+
