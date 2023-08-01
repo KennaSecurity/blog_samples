@@ -115,6 +115,7 @@ def htmlize_vuln_with_details(vuln, sanitizer):
             line += f"{html_field('Connector Name')} {connector_name}<br>"
             line += f"{html_field('Detail')} {detail_value}<br>"
 
+
     line += "</p>\n"
     return line
 
@@ -326,7 +327,6 @@ if __name__ == "__main__":
     html_f = open(html_vuln_file_name, 'w')
     html_f.write(get_html_head_stuff(export_id, selected_fields))
 
-
     # Read the JSONL input file and write out pretty JSON and HTML files.
     num_lines = 0
     with open(jsonl_vuln_file_name, 'r') as jsonl_f:
@@ -340,13 +340,14 @@ if __name__ == "__main__":
             # Write out an HTML file.
             vuln_formatted = htmlize_vuln_with_details(vuln, sanitizer)
             html_f.write(f"{vuln_formatted}")
-
+            
             num_lines += 1
 
     # Close up shop and publish results.
     json_f.close()
     html_f.write(get_html_tail_stuff())
     html_f.close()
+    
     print(f"All pau.")   # "pau" in Hawaiian means "done".
     print_info(f"Processed {num_lines} vulnerabilities.")
     print(f"Output files:")
