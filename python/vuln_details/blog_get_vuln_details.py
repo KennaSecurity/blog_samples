@@ -68,6 +68,18 @@ def convert_from_jsonl(vuln_line):
     
     return json_vuln
 
+def get_html_head_stuff(export_id, selected_fields):
+    line = "<html>\n<header>\n"
+    line += f"<h1>Vulnerability Export ID {export_id}</h1>\n"
+    str_selected_fields = ', '.join(selected_fields)
+    line += f"<p><i><b>with selected fields:</b> {str_selected_fields}</i></p>\n"
+    line += "</header>\n<body>\n"
+    return line
+
+def get_html_tail_stuff():
+    line = "</body>\n</html>\n"
+    return line
+
 # Added HTML formatting for a field.
 def html_field(field):
     return f"<i><b>{field}:</b></i>"
@@ -87,7 +99,7 @@ def htmlize_vuln_with_details(vuln, sanitizer):
     solution = vuln["solution"]
 
     # Format each field with value.
-    line = f"<h2>Vuln ID {id}</h3> "
+    line = f"<h2>Vuln ID {id}</h2><p>"
     line += f"{html_field('Description')} {descript}<br>"
     line += f"{html_field('CVE ID')} {cve_id}<br>"
     line += f"{html_field('CVE description')} {cve_descript}<br>"
@@ -103,6 +115,7 @@ def htmlize_vuln_with_details(vuln, sanitizer):
             line += f"{html_field('Connector Name')} {connector_name}<br>"
             line += f"{html_field('Detail')} {detail_value}<br>"
 
+    line += "</p>\n"
     return line
 
 # Invoke the data_exports API to request an vuln export.
@@ -311,6 +324,8 @@ if __name__ == "__main__":
     sanitizer = Sanitizer()  # default configuration
     json_f = open(json_vuln_file_name, 'w')
     html_f = open(html_vuln_file_name, 'w')
+    html_f.write(get_html_head_stuff(export_id, selected_fields))
+
 
     # Read the JSONL input file and write out pretty JSON and HTML files.
     num_lines = 0
@@ -318,17 +333,21 @@ if __name__ == "__main__":
         for line_num, vuln_line in enumerate(jsonl_f):
             vuln = convert_from_jsonl(vuln_line)
 
+            # Write out a pretty JSON file.
             vuln_formatted = json.dumps(vuln, sort_keys=True, indent=2)
             json_f.write(f"{vuln_formatted}\n")
+            
+            # Write out an HTML file.
             vuln_formatted = htmlize_vuln_with_details(vuln, sanitizer)
-            html_f.write(f"{vuln_formatted}<p>")
+            html_f.write(f"{vuln_formatted}")
 
             num_lines += 1
 
     # Close up shop and publish results.
     json_f.close()
+    html_f.write(get_html_tail_stuff())
     html_f.close()
-    print(f"All pau.")
+    print(f"All pau.")   # "pau" in Hawaiian means "done".
     print_info(f"Processed {num_lines} vulnerabilities.")
     print(f"Output files:")
     print(f"   {jsonl_vuln_file_name}")
