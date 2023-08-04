@@ -15,28 +15,27 @@ import requests
 import json
 import gzip
 import shutil
-from json2html import *
-from html_sanitizer import Sanitizer
+from textwrap import dedent
 
 # Print help.
 def print_help():
     prog_name = sys.argv[0]
-    print("")
-    print("Obtains a vulnerability export with vulnerability details into a .gz file.")
-    print("")
-
-    print("There are 2 formats:")
-    print(f"    {prog_name}")
-    print(f"    {prog_name} <export_search_id>")
-    print("Where <export_search_id> is search ID from an vuln export.")
-    print("If <export_search_id> is not present, a new export is created and retrieved.")
-    print("")
-    print("There are 3 output files:")
-    print("    vulns_<export_id>.jsonl")
-    print("    vulns_<export_id>.json")
-    print("    vulns_<export_id>.html")
-    print("")
-
+    
+    print(dedent(f"""
+        Obtains a vulnerability export with vulnerability details into a .gz file.
+    
+        There are 2 formats:
+            {prog_name}
+            {prog_name} <export_search_id>
+        Where <export_search_id> is search ID from an vuln export.
+        If <export_search_id> is not present, a new export is created and retrieved.
+    
+        There are 3 output files:
+            vulns_<export_id>.jsonl
+            vulns_<export_id>.json
+            vulns_<export_id>.html
+    """).lstrip())
+    
     logging.info("Exited after helping.")
     sys.exit(1)
 
@@ -67,57 +66,6 @@ def convert_from_jsonl(vuln_line):
         sys.exit(1)
     
     return json_vuln
-
-def get_html_head_stuff(export_id, selected_fields):
-    line = "<html>\n<header>\n"
-    line += f"<h1>Vulnerability Export ID {export_id}</h1>\n"
-    str_selected_fields = ', '.join(selected_fields)
-    line += f"<p><i><b>with selected fields:</b> {str_selected_fields}</i></p>\n"
-    line += "</header>\n<body>\n"
-    return line
-
-def get_html_tail_stuff():
-    line = "</body>\n</html>\n"
-    return line
-
-# Added HTML formatting for a field.
-def html_field(field):
-    return f"<i><b>{field}:</b></i>"
-
-# Format into HTML.
-def htmlize_vuln_with_details(vuln, sanitizer):
-    # Pull out the fields.
-    id = vuln["id"]
-    cve_id = vuln["cve_id"]
-    cve_descript = vuln["cve_description"]
-    descript = vuln["description"]
-    details = None
-    if "details" in vuln:
-        details = vuln["details"]
-    risk_meter_score = vuln["risk_meter_score"]
-    scanner_score = vuln["scanner_score"]
-    solution = vuln["solution"]
-
-    # Format each field with value.
-    line = f"<h2>Vuln ID {id}</h2><p>"
-    line += f"{html_field('Description')} {descript}<br>"
-    line += f"{html_field('CVE ID')} {cve_id}<br>"
-    line += f"{html_field('CVE description')} {cve_descript}<br>"
-    line += f"{html_field('Risk meter score')} {risk_meter_score}<br>"
-    line += f"{html_field('Scanner score')} {scanner_score}<br>"
-    line += f"{html_field('Solution')} {solution}<br>"
-
-    # Format the details.  Sanitized the detail value if in HTML.
-    if details is not None:
-        for detail in details:
-            connector_name = detail["connector_name"]
-            detail_value = sanitizer.sanitize(detail["value"])
-            line += f"{html_field('Connector Name')} {connector_name}<br>"
-            line += f"{html_field('Detail')} {detail_value}<br>"
-
-
-    line += "</p>\n"
-    return line
 
 # Invoke the data_exports API to request an vuln export.
 def request_vuln_exports(base_url, headers, selected_fields):
@@ -316,42 +264,3 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print_info(f"File: {jsonl_vuln_file_name} with {num_vulns} vulns.")
-
-    file_name_without_ext = os.path.splitext(jsonl_vuln_file_name)[0]
-    json_vuln_file_name = f"{file_name_without_ext}.json"
-    html_vuln_file_name = f"{file_name_without_ext}.html"
-
-    # Initialize the HTML Sanitizer and open the output files.
-    sanitizer = Sanitizer()  # default configuration
-    json_f = open(json_vuln_file_name, 'w')
-    html_f = open(html_vuln_file_name, 'w')
-    html_f.write(get_html_head_stuff(export_id, selected_fields))
-
-    # Read the JSONL input file and write out pretty JSON and HTML files.
-    num_lines = 0
-    with open(jsonl_vuln_file_name, 'r') as jsonl_f:
-        for line_num, vuln_line in enumerate(jsonl_f):
-            vuln = convert_from_jsonl(vuln_line)
-
-            # Write out a pretty JSON file.
-            vuln_formatted = json.dumps(vuln, sort_keys=True, indent=2)
-            json_f.write(f"{vuln_formatted}\n")
-            
-            # Write out an HTML file.
-            vuln_formatted = htmlize_vuln_with_details(vuln, sanitizer)
-            html_f.write(f"{vuln_formatted}")
-            
-            num_lines += 1
-
-    # Close up shop and publish results.
-    json_f.close()
-    html_f.write(get_html_tail_stuff())
-    html_f.close()
-    
-    print(f"All pau.")   # "pau" in Hawaiian means "done".
-    print_info(f"Processed {num_lines} vulnerabilities.")
-    print(f"Output files:")
-    print(f"   {jsonl_vuln_file_name}")
-    print(f"   {json_vuln_file_name}")
-    print(f"   {html_vuln_file_name}")
-    logging.info(f"Output files: {jsonl_vuln_file_name}, {json_vuln_file_name} and {html_vuln_file_name}")
