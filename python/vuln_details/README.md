@@ -2,7 +2,7 @@
 
 ## Get Vulneraibilities' Details with Field Selection
 
-* blog_get_vuln_details.py - Obtains the vulnerability details along with some other fields and creates three files, one in JSONL, one in formated JSON, and one in HTML.  The infomation is obtained via vulnerability exports.
+* blog_get_vuln_details.py - Obtains the vulnerability details along with some other fields and creates JSONL file.
 
 ### Intallation
 `pip -r requirements.txt`
