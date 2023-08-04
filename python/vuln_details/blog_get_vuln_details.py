@@ -30,10 +30,8 @@ def print_help():
         Where <export_search_id> is search ID from an vuln export.
         If <export_search_id> is not present, a new export is created and retrieved.
     
-        There are 3 output files:
+        There are one output file:
             vulns_<export_id>.jsonl
-            vulns_<export_id>.json
-            vulns_<export_id>.html
     """).lstrip())
     
     logging.info("Exited after helping.")
