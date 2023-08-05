@@ -12,4 +12,4 @@
 * `python blog_get_vuln_details.py` to export and process.
 * `python blog_get_vuln_details.py <export ID>` to process existing export.
 
-*Note:* "pau" means "done" in Hawaiian.
+As in all code in the blog_samples repo, you must set `KENNA_API_KEY` environment variable.  Also the script uses the variable `base_url` which needs to be verified that it is correct for your server.
