@@ -1,8 +1,5 @@
-# Get the historical vulnerability counts for each month for a year.
-# The vulnerability counts for 'high', 'medium', and 'low' risk scores and include
-# risk accepted vulnerability counts.
-#
-# This program is written to run stand-alone or as a subprocess invoked from list_risk_scores.py.
+# Get the historical Mean Time To Remediate (MTTR) in days for vulnerabilities
+# for 'high', 'medium', and 'low' risk levels.
 
 import os
 import sys
@@ -11,9 +8,11 @@ from datetime import date, timedelta
 import requests
 from prettytable import PrettyTable
 
+# Returns 1 if negative, 0 if positive.
 def sign_bit(num):
     return (int(num < 0))
 
+# Gets the next year and month given a year and month.
 def get_next_month(year, month):
     month_day = calendar.monthrange(year, month)
     num_days_per_month = month_day[1]
@@ -77,7 +76,7 @@ def get_vuln_mttr_report(base_url, headers, id, start_date, end_date):
 # Processes vulnerability MTTR report.
 def process_report(base_url, headers, name, id, given_date, months_back, num_months):
 
-    # Look up array
+    # Look up array for sussing out start month.
     months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     
     year = given_date.year
@@ -88,11 +87,13 @@ def process_report(base_url, headers, name, id, given_date, months_back, num_mon
     year_to_process = year -  sign_bit(start_month_index)
     month_to_process = months[start_month_index]
 
+    # Initialize our output table.
     vuln_mttr_tbl = PrettyTable()
     vuln_mttr_tbl.field_names = ["Date", "High Risk", "Medium Risk", "Low Risk", "All"]
 
     # Get and process vuln MTTR data for each month.
     for i in range(0, num_months):
+        # Get the date range for the report.
         start_date = date(year_to_process, month_to_process, 1)
         month_info = calendar.monthrange(year_to_process, month_to_process)
         end_date = date(year_to_process, month_to_process, month_info[1])
@@ -122,9 +123,8 @@ def process_report(base_url, headers, name, id, given_date, months_back, num_mon
 
 def print_help(program):
     print(f"Prints out the historical risk meter vulnerability counts for a year.")
-    print(f"{program} <risk meter name> [today]")
+    print(f"{program} <risk meter name>")
     print(f"   <risk meter name> - name of the risk meter")
-    print(f"   [today] - if present will only print the vulnerability counts for today")
     print("")
 
 if __name__ == "__main__":
@@ -147,11 +147,6 @@ if __name__ == "__main__":
                'Accept': 'application/json',
                'Content-Type': 'application/json; charset=utf-8',
                'User-Agent': 'sample.mttr_vulns/1.0.0 (Cisco Vulnerability Management)'}
-
-    today = date.today()
-    month_beginning = today.replace(day=1)
-    start_date = month_beginning.replace(year=today.year - 1)
-    start_date_str = start_date.isoformat()
 
     # You might have to change this depending on your deployment.
     base_url = "https://api.kennasecurity.com/"
