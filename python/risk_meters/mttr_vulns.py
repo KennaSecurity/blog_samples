@@ -89,7 +89,7 @@ def process_report(base_url, headers, name, id, given_date, months_back, num_mon
     month_to_process = months[start_month_index]
 
     vuln_mttr_tbl = PrettyTable()
-    vuln_mttr_tbl.field_names = ["Date", "High", "Medium", "Low", "Total"]
+    vuln_mttr_tbl.field_names = ["Date", "High", "Medium", "Low", "All"]
 
     # Get and process vuln MTTR data for each month.
     for i in range(0, num_months):

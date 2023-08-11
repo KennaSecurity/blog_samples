@@ -5,7 +5,7 @@ import json
 import logging
 import requests
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
 # This might have to changed depending on your setup.
 KENNA_BASE_URL = "https://api.kennasecurity.com/"
@@ -32,6 +32,11 @@ def process_http_error(msg, response, url):
     else:
         logging.error(f"{msg}, {url} status_code: {response.status_code} info: {response.text}")
   
+# Print and log warning.
+def process_warning(msg):
+    print(msg)
+    logging.warning(msg)
+
 # Print and log information.
 def process_info(msg):
     print(msg)
@@ -219,9 +224,17 @@ def get_a_risk_meter(base_url, headers, risk_meter_name):
             sys.exit(1)
 
         resp_json = response.json()
-        risk_meters_resp = resp_json['asset_groups']
+        
         # Set the maximum number of pages, so that we have one loop.
+        if "meta" not in resp_json and "pages" not in resp_json['meta']:
+            process_warning(f"'meta' or 'pages' are not in {resp_json} for List Group Assets API. Page={page_num}")
         max_pages = resp_json['meta']['pages']
+
+        if "asset_groups" not in resp_json:
+            process_warning(f"'assets_groups' is not in {resp_json} for List Group Assets API. Page={page_num}")
+            return None
+
+        risk_meters_resp = resp_json['asset_groups']
 
         # Search for the risk meter by name.
         for risk_meter in risk_meters_resp:
