@@ -32,6 +32,11 @@ def process_http_error(msg, response, url):
     else:
         logging.error(f"{msg}, {url} status_code: {response.status_code} info: {response.text}")
   
+# Print and log error.
+def process_error(msg):
+    print(msg)
+    logging.error(msg)
+
 # Print and log warning.
 def process_warning(msg):
     print(msg)
@@ -225,14 +230,27 @@ def get_a_risk_meter(base_url, headers, risk_meter_name):
 
         resp_json = response.json()
         
-        # Set the maximum number of pages, so that we have one loop.
-        if "meta" not in resp_json and "pages" not in resp_json['meta']:
-            process_warning(f"'meta' or 'pages' are not in {resp_json} for List Group Assets API. Page={page_num}")
-        max_pages = resp_json['meta']['pages']
+        # Check if the meta field is present.
+        if "meta" not in resp_json:
+            process_error(f"'meta' is not in {resp_json} for List Group Assets API. Page={page_num}")
+            sys.exit(1)
+
+        # Set the maximum number of pages, so we don't make an API call outside the loop.
+        # But before max_pages is set, verify the pages field is present.
+        if "pages" in resp_json['meta']:
+            max_pages = resp_json['meta']['pages']
+        else:
+            process_warning(f"'pages' are not in {resp_json} for List Group Assets API. Page={page_num}")
+            if "total_count" in resp_json['meta']:
+                process_warning("You have the 'do_not_paginate_get_asset_groups_endpoint feature flag enabled.")
+            else:
+                process_error(f"Invalid meta for {resp_json}.")
+                sys.exit(1)
+            max_pages = 1
 
         if "asset_groups" not in resp_json:
-            process_warning(f"'assets_groups' is not in {resp_json} for List Group Assets API. Page={page_num}")
-            return None
+            process_error(f"'assets_groups' is not in {resp_json} for List Group Assets API. Page={page_num}")
+            sys.exit(1)
 
         risk_meters_resp = resp_json['asset_groups']
 
