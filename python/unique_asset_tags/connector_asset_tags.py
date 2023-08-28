@@ -515,4 +515,4 @@ if __name__ == "__main__":
     
     end_time = time.time()
     time_diff_str = str(datetime.timedelta(seconds=(end_time - start_time)))
-    print_info(f"It {time_diff_str} to process {asset_count} assets with {asset_with_tags_count} assets with tags and {connector_tag_count} connector tags.")
+    print_info(f"It took {time_diff_str} to process {asset_count} assets with {asset_with_tags_count} assets with tags and {connector_tag_count} connector tags.")
